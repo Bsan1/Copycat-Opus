@@ -1,0 +1,395 @@
+{
+  "model": "hose_nozzle",
+  "generator": "tools/blender/models/hose_nozzle.py",
+  "blender": "5.2.3 LTS",
+  "objects": [
+    {
+      "name": "Body",
+      "position": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "boundsMin": {
+        "x": -0.052479,
+        "y": -0.60789,
+        "z": -0.42547
+      },
+      "boundsMax": {
+        "x": 0.066836,
+        "y": 0.052479,
+        "z": -0.0
+      },
+      "triangles": 13948,
+      "vertices": 7004,
+      "closed": true,
+      "foliage": false,
+      "volume": 0.001763254,
+      "materials": [
+        "Atlas_hose_nozzle"
+      ]
+    },
+    {
+      "name": "Trigger",
+      "position": {
+        "x": 0.0,
+        "y": -0.036,
+        "z": -0.162
+      },
+      "boundsMin": {
+        "x": -0.03,
+        "y": -0.148283,
+        "z": -0.041073
+      },
+      "boundsMax": {
+        "x": 0.03,
+        "y": 0.00585,
+        "z": 0.008472
+      },
+      "triangles": 948,
+      "vertices": 478,
+      "closed": true,
+      "foliage": false,
+      "volume": 0.000179396,
+      "materials": [
+        "Atlas_hose_nozzle"
+      ]
+    }
+  ],
+  "anchors": [
+    {
+      "name": "Joint",
+      "position": {
+        "x": 0.0,
+        "y": -0.036,
+        "z": -0.162
+      }
+    },
+    {
+      "name": "Nozzle",
+      "position": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      }
+    },
+    {
+      "name": "HeadBack",
+      "position": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": -0.034
+      }
+    },
+    {
+      "name": "Knob",
+      "position": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": -0.192
+      }
+    },
+    {
+      "name": "GripUpper",
+      "position": {
+        "x": 0.0,
+        "y": -0.035,
+        "z": -0.142
+      }
+    },
+    {
+      "name": "GripLower",
+      "position": {
+        "x": 0.0,
+        "y": -0.205,
+        "z": -0.168
+      }
+    }
+  ],
+  "surfaces": [
+    {
+      "name": "Source_green_matte",
+      "finish": "matte",
+      "note": "Head, neck, grip: green plastic; no shine in the video (user: 'no shiny material in the video')"
+    },
+    {
+      "name": "Source_yellow_matte",
+      "finish": "matte",
+      "note": "Yellow body and rear trigger: mustard-yellow plastic, matte"
+    },
+    {
+      "name": "Source_black_matte",
+      "finish": "matte",
+      "note": "Dial band, flow knob, stripe, finger grooves: black rubber; flat dark in the video"
+    },
+    {
+      "name": "Source_ring_matte",
+      "finish": "matte",
+      "note": "The light ring on the knob's face; a grey ring inside the knob in the video"
+    },
+    {
+      "name": "Source_mark_matte",
+      "finish": "matte",
+      "note": "Setting mark on the knob: a white dot; a small light dot on the knob in the video"
+    },
+    {
+      "name": "Source_holes_matte",
+      "finish": "matte",
+      "note": "Nozzle holes (a guess; off screen)"
+    },
+    {
+      "name": "Source_coupling_satin",
+      "finish": "satin",
+      "note": "Hose coupling: zinc casting (a guess; off screen)"
+    },
+    {
+      "name": "Source_hose_matte",
+      "finish": "matte",
+      "note": "Hose: green PVC (a guess; off screen)"
+    }
+  ],
+  "atlas": {
+    "size": 2048,
+    "textures": {
+      "color": "Assets/Opus/Resources/Models/Textures/hose_nozzle/hose_nozzle_color.png",
+      "normal": "Assets/Opus/Resources/Models/Textures/hose_nozzle/hose_nozzle_normal.png",
+      "orm": "Assets/Opus/Resources/Models/Textures/hose_nozzle/hose_nozzle_orm.png"
+    },
+    "texelDensity": {
+      "Body": 2545,
+      "Trigger": 2545
+    },
+    "ao": 0.03
+  },
+  "qc": {
+    "zFighting": {
+      "pairs": 0,
+      "cm2": 0.0
+    },
+    "construction": {
+      "shells": 18,
+      "components": 1,
+      "stray": [],
+      "routes": 0,
+      "attachments": 1,
+      "supports": 1,
+      "problems": []
+    },
+    "holes": {
+      "cameras": 300,
+      "rays": 450000,
+      "backface_hits": 0,
+      "hole_points": 0,
+      "edge_grazes": 0,
+      "regions": [],
+      "examples": []
+    },
+    "joints": {
+      "members": 7,
+      "ends": 4,
+      "bad": 0,
+      "worst": []
+    },
+    "texels": {
+      "atlas": 2048,
+      "density_px_per_m": {
+        "Body": 2545,
+        "Trigger": 2545
+      },
+      "bands_percent": {
+        "<1": 0.4,
+        "1-2": 0.0,
+        "2-4": 0.7,
+        ">=4": 98.8
+      },
+      "thin_faces": 0,
+      "worst": []
+    },
+    "atlasUsedPercent": 36.4
+  },
+  "plan": {
+    "purpose": "pistol hose nozzle: held in one hand, the palm squeezes the rear trigger and water sprays from the head",
+    "tier": "complex",
+    "category": [
+      "machines"
+    ],
+    "supports": [
+      "hands"
+    ],
+    "sources": [
+      {
+        "kind": "video",
+        "where": "0:11-0:53, first person (refs 04, 07, 24)"
+      }
+    ],
+    "components": [
+      {
+        "name": "Grip",
+        "role": "structural",
+        "job": "held in the palm, finger grooves; the water runs up inside it",
+        "attaches": [
+          "hands"
+        ],
+        "moves": "fixed",
+        "source": "seen"
+      },
+      {
+        "name": "Coupling",
+        "role": "functional",
+        "job": "joins the hose under the grip",
+        "attaches": [
+          "Grip"
+        ],
+        "moves": "fixed",
+        "source": "guess"
+      },
+      {
+        "name": "Hose",
+        "role": "functional",
+        "job": "brings the water",
+        "attaches": [
+          "Coupling"
+        ],
+        "moves": "flex",
+        "source": "guess"
+      },
+      {
+        "name": "YellowBody",
+        "role": "functional",
+        "job": "valve body between the grip and the neck",
+        "attaches": [
+          "Grip"
+        ],
+        "moves": "fixed",
+        "source": "seen"
+      },
+      {
+        "name": "FlowKnob",
+        "role": "functional",
+        "job": "sets the valve (knurled, light ring and dot)",
+        "attaches": [
+          "YellowBody"
+        ],
+        "moves": "spin",
+        "source": "seen"
+      },
+      {
+        "name": "Trigger",
+        "role": "functional",
+        "job": "rear trigger: the palm squeezes it towards the grip to open the flow",
+        "attaches": [
+          "YellowBody",
+          "hands"
+        ],
+        "moves": "hinge",
+        "source": "seen"
+      },
+      {
+        "name": "Neck",
+        "role": "structural",
+        "job": "carries the water up to the head",
+        "attaches": [
+          "YellowBody"
+        ],
+        "moves": "fixed",
+        "source": "seen"
+      },
+      {
+        "name": "Head",
+        "role": "functional",
+        "job": "spray head, nozzle holes in its front",
+        "attaches": [
+          "Neck"
+        ],
+        "moves": "fixed",
+        "source": "seen"
+      },
+      {
+        "name": "DialBand",
+        "role": "functional",
+        "job": "turns to choose the spray pattern",
+        "attaches": [
+          "Head"
+        ],
+        "moves": "spin",
+        "source": "seen"
+      },
+      {
+        "name": "Stripe",
+        "role": "decorative",
+        "job": "black stripe on the yellow body, as in the video",
+        "attaches": [
+          "YellowBody"
+        ],
+        "moves": "fixed",
+        "source": "seen"
+      }
+    ]
+  },
+  "located": [
+    "Grip",
+    "Trigger"
+  ],
+  "features": [
+    {
+      "id": "trigger_hinge",
+      "tier": "critical",
+      "components": [
+        "Trigger",
+        "YellowBody"
+      ],
+      "expect": "the rear trigger turns on its joint under the yellow body and moves towards the grip when squeezed",
+      "measure": "attach:TriggerHinge",
+      "view": "side",
+      "measured": "pass"
+    },
+    {
+      "id": "palm_grip",
+      "tier": "critical",
+      "components": [
+        "Grip",
+        "Trigger"
+      ],
+      "expect": "the palm closes round the grip with the trigger behind it",
+      "measure": "support:hands",
+      "view": "side",
+      "measured": "pass"
+    },
+    {
+      "id": "water_path",
+      "tier": "important",
+      "components": [
+        "Coupling",
+        "Grip",
+        "YellowBody",
+        "Neck",
+        "Head"
+      ],
+      "expect": "a continuous path hose -> coupling -> grip -> body -> neck -> head, no gap",
+      "measure": null,
+      "view": "side",
+      "measured": null
+    }
+  ],
+  "bevels_mm": {
+    "Body": 0.8,
+    "Trigger": 1.0
+  },
+  "links": {
+    "routes": [],
+    "attachments": [
+      {
+        "name": "TriggerHinge",
+        "point": {
+          "x": 0.0,
+          "y": -0.036,
+          "z": -0.162
+        }
+      }
+    ]
+  },
+  "geometry": "b0ac204a441606c1",
+  "structure": "730490cc3411190b",
+  "asset": "f0961a9a7bc1e43c",
+  "style_version": "1.1"
+}

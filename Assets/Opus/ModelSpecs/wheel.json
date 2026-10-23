@@ -1,0 +1,203 @@
+{
+  "model": "wheel",
+  "generator": "tools/blender/models/wheel.py",
+  "blender": "5.2.3 LTS",
+  "objects": [
+    {
+      "name": "RearWheel",
+      "position": {
+        "x": -0.0,
+        "y": 0.0,
+        "z": -0.0
+      },
+      "boundsMin": {
+        "x": -0.029314,
+        "y": -0.114996,
+        "z": -0.114996
+      },
+      "boundsMax": {
+        "x": 0.029314,
+        "y": 0.114996,
+        "z": 0.114996
+      },
+      "triangles": 19040,
+      "vertices": 9522,
+      "closed": true,
+      "foliage": false,
+      "volume": 0.001708284,
+      "materials": [
+        "Atlas_wheel"
+      ]
+    },
+    {
+      "name": "FrontWheel",
+      "position": {
+        "x": -0.0,
+        "y": 0.0,
+        "z": -0.0
+      },
+      "boundsMin": {
+        "x": -0.024014,
+        "y": -0.094997,
+        "z": -0.094997
+      },
+      "boundsMax": {
+        "x": 0.024014,
+        "y": 0.094997,
+        "z": 0.094997
+      },
+      "triangles": 19040,
+      "vertices": 9522,
+      "closed": true,
+      "foliage": false,
+      "volume": 0.000952357,
+      "materials": [
+        "Atlas_wheel"
+      ]
+    }
+  ],
+  "anchors": [],
+  "surfaces": [
+    {
+      "name": "Source_tire_matte",
+      "finish": "matte",
+      "note": "Tire: rubber; charcoal grey in the video, no shine"
+    },
+    {
+      "name": "Source_rim_matte",
+      "finish": "matte",
+      "note": "Rim: moulded plastic (a guess; not visible in the video)"
+    },
+    {
+      "name": "Source_cap_satin",
+      "finish": "satin",
+      "note": "Hub cap: dark grey plastic (a guess; not visible in the video; the red cap read as a toy)"
+    }
+  ],
+  "atlas": {
+    "size": 2048,
+    "textures": {
+      "color": "Assets/Opus/Resources/Models/Textures/wheel/wheel_color.png",
+      "normal": "Assets/Opus/Resources/Models/Textures/wheel/wheel_normal.png",
+      "orm": "Assets/Opus/Resources/Models/Textures/wheel/wheel_orm.png"
+    },
+    "texelDensity": {
+      "RearWheel": 1239,
+      "FrontWheel": 1239
+    },
+    "ao": 0.03
+  },
+  "qc": {
+    "zFighting": {
+      "pairs": 0,
+      "cm2": 0.0
+    },
+    "construction": {
+      "shells": 6,
+      "components": 2,
+      "stray": [],
+      "routes": 0,
+      "attachments": 0,
+      "supports": 0,
+      "problems": []
+    },
+    "holes": {
+      "cameras": 600,
+      "rays": 900000,
+      "backface_hits": 0,
+      "hole_points": 0,
+      "edge_grazes": 0,
+      "regions": [],
+      "examples": []
+    },
+    "joints": {
+      "members": 0,
+      "ends": 0,
+      "bad": 0,
+      "worst": []
+    },
+    "texels": {
+      "atlas": 2048,
+      "density_px_per_m": {
+        "RearWheel": 1239,
+        "FrontWheel": 1239
+      },
+      "bands_percent": {
+        "<1": 1.8,
+        "1-2": 3.7,
+        "2-4": 16.7,
+        ">=4": 77.8
+      },
+      "thin_faces": 0,
+      "worst": []
+    },
+    "atlasUsedPercent": 12.4
+  },
+  "plan": {
+    "purpose": "push mower wheel: turns on its axle pin and rolls the mower",
+    "tier": "simple",
+    "category": [
+      "machines"
+    ],
+    "supports": [
+      "axle"
+    ],
+    "sources": [
+      {
+        "kind": "video",
+        "where": "only the back corners of the housing show the wheels"
+      }
+    ],
+    "components": [
+      {
+        "name": "Hub",
+        "role": "structural",
+        "job": "turns on the axle pin",
+        "attaches": [
+          "axle"
+        ],
+        "moves": "spin",
+        "source": "guess"
+      },
+      {
+        "name": "Rim",
+        "role": "structural",
+        "job": "carries the tire; its pockets leave spokes",
+        "attaches": [
+          "Hub"
+        ],
+        "moves": "spin",
+        "source": "guess"
+      },
+      {
+        "name": "Tire",
+        "role": "functional",
+        "job": "grips the ground, small tread blocks",
+        "attaches": [
+          "Rim"
+        ],
+        "moves": "spin",
+        "source": "seen"
+      },
+      {
+        "name": "HubCap",
+        "role": "decorative",
+        "job": "covers the hub, dark grey",
+        "attaches": [
+          "Hub"
+        ],
+        "moves": "spin",
+        "source": "guess"
+      }
+    ]
+  },
+  "located": [],
+  "bevels_mm": {
+    "FrontWheel": 1.23,
+    "RearWheel": 1.5
+  },
+  "geometry": "be0d0edc6fa5ec94",
+  "structure": "7e658ce2eb893cfd",
+  "asset": "16efddabf89aa548",
+  "style_version": "1.1"
+}

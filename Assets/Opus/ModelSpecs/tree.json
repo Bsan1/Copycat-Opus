@@ -1,0 +1,237 @@
+{
+  "model": "tree",
+  "generator": "tools/blender/models/tree.py",
+  "blender": "5.2.3 LTS",
+  "objects": [
+    {
+      "name": "Body",
+      "position": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "boundsMin": {
+        "x": -1.55589,
+        "y": -0.15,
+        "z": -1.891261
+      },
+      "boundsMax": {
+        "x": 2.526256,
+        "y": 5.163451,
+        "z": 2.152071
+      },
+      "triangles": 15372,
+      "vertices": 7722,
+      "closed": true,
+      "foliage": false,
+      "volume": 2.888616194,
+      "materials": [
+        "Atlas_tree"
+      ]
+    },
+    {
+      "name": "Leaves",
+      "position": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "boundsMin": {
+        "x": -2.321621,
+        "y": 3.342975,
+        "z": -2.805243
+      },
+      "boundsMax": {
+        "x": 3.361077,
+        "y": 6.425847,
+        "z": 2.989255
+      },
+      "triangles": 51756,
+      "vertices": 69008,
+      "closed": false,
+      "foliage": true,
+      "volume": 0.0,
+      "materials": [
+        "Foliage_5E8A3A_matte",
+        "Foliage_7FA34A_matte",
+        "Foliage_9DBB55_matte"
+      ]
+    }
+  ],
+  "anchors": [],
+  "surfaces": [
+    {
+      "name": "Source_bark_matte",
+      "finish": "matte",
+      "note": "Trunk, roots, branches: bark; flat warm brown in the video with a fine vertical grain, no shine (the dark patches at 1:06 are leaf shadows, not paint)"
+    },
+    {
+      "name": "Foliage_5E8A3A_matte",
+      "finish": "matte",
+      "note": "Crown underside and inner leaves: dark green (garden palette; the crown is not visible in the video)"
+    },
+    {
+      "name": "Foliage_7FA34A_matte",
+      "finish": "matte",
+      "note": "Crown middle leaves: green (garden palette)"
+    },
+    {
+      "name": "Foliage_9DBB55_matte",
+      "finish": "matte",
+      "note": "Crown top leaves: light green (garden palette; facing the sun)"
+    }
+  ],
+  "atlas": {
+    "size": 2048,
+    "textures": {
+      "color": "Assets/Opus/Resources/Models/Textures/tree/tree_color.png",
+      "normal": "Assets/Opus/Resources/Models/Textures/tree/tree_normal.png",
+      "orm": "Assets/Opus/Resources/Models/Textures/tree/tree_orm.png"
+    },
+    "texelDensity": {
+      "Body": 224
+    },
+    "ao": 0.6,
+    "untextured": [
+      "Leaves"
+    ]
+  },
+  "external": [
+    {
+      "ref": "ambientcg:Bark003",
+      "part": "(texture)",
+      "name": "Bark 003",
+      "licence": "CC0",
+      "authors": [
+        "ambientCG (Lennart Demes)"
+      ],
+      "page": "https://ambientcg.com/view?id=Bark003",
+      "attributionRequired": false,
+      "file": "Bark003_1K-JPG_Displacement.jpg"
+    }
+  ],
+  "qc": {
+    "zFighting": {
+      "pairs": 0,
+      "cm2": 0.0
+    },
+    "construction": {
+      "shells": 18,
+      "components": 1,
+      "stray": [],
+      "routes": 0,
+      "attachments": 0,
+      "supports": 0,
+      "problems": []
+    },
+    "holes": {
+      "cameras": 300,
+      "rays": 450000,
+      "backface_hits": 0,
+      "hole_points": 0,
+      "edge_grazes": 0,
+      "regions": [],
+      "examples": []
+    },
+    "joints": {
+      "members": 17,
+      "ends": 34,
+      "bad": 0,
+      "worst": []
+    },
+    "texels": {
+      "atlas": 2048,
+      "density_px_per_m": {
+        "Body": 224
+      },
+      "bands_percent": {
+        "<1": 0.0,
+        "1-2": 0.0,
+        "2-4": 13.2,
+        ">=4": 86.8
+      },
+      "thin_faces": 0,
+      "worst": []
+    },
+    "atlasUsedPercent": 35.6
+  },
+  "plan": {
+    "purpose": "garden tree with a side branch that carries the tire swing",
+    "tier": "simple",
+    "category": [
+      "organic"
+    ],
+    "supports": [
+      "ground"
+    ],
+    "sources": [
+      {
+        "kind": "video",
+        "where": "1:04-1:08 (ref 27); the crown is never seen"
+      }
+    ],
+    "components": [
+      {
+        "name": "Roots",
+        "role": "structural",
+        "job": "buttress fins going into the soil",
+        "attaches": [
+          "ground"
+        ],
+        "moves": "fixed",
+        "source": "seen"
+      },
+      {
+        "name": "Trunk",
+        "role": "structural",
+        "job": "carries the crown and the swing branch",
+        "attaches": [
+          "Roots"
+        ],
+        "moves": "fixed",
+        "source": "seen"
+      },
+      {
+        "name": "SwingBranch",
+        "role": "structural",
+        "job": "side branch the swing's rope wraps round",
+        "attaches": [
+          "Trunk"
+        ],
+        "moves": "fixed",
+        "source": "seen"
+      },
+      {
+        "name": "Branches",
+        "role": "structural",
+        "job": "fork from the trunk, thin ones out of thick ones",
+        "attaches": [
+          "Trunk"
+        ],
+        "moves": "fixed",
+        "source": "guess"
+      },
+      {
+        "name": "Leaves",
+        "role": "functional",
+        "job": "leaf clusters at the tips of the thin branches",
+        "attaches": [
+          "Branches"
+        ],
+        "moves": "fixed",
+        "source": "guess"
+      }
+    ]
+  },
+  "located": [
+    "Leaves"
+  ],
+  "bevels_mm": {
+    "Body": null,
+    "Leaves": null
+  },
+  "geometry": "f7cb5a104e7c01b5",
+  "structure": "70e38d526cc70aef",
+  "asset": "2be022fc6856a532",
+  "style_version": "1.1"
+}

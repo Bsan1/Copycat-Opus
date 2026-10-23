@@ -1,0 +1,673 @@
+{
+  "model": "house",
+  "generator": "tools/blender/models/house.py",
+  "blender": "5.2.3 LTS",
+  "objects": [
+    {
+      "name": "House",
+      "position": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "boundsMin": {
+        "x": -8.62,
+        "y": -0.05,
+        "z": -8.425
+      },
+      "boundsMax": {
+        "x": 8.62,
+        "y": 9.726,
+        "z": 6.5
+      },
+      "triangles": 103802,
+      "vertices": 59863,
+      "closed": true,
+      "foliage": false,
+      "volume": 1364.896528362,
+      "materials": [
+        "Siding_A6B0B8_matte",
+        "Concrete_A19E99_matte",
+        "Paint_D6DBE3_matte",
+        "Glass_C8CED6_glossy",
+        "Paint_94817F_matte",
+        "Shingles_535F61_matte",
+        "Metal_9A7C78_satin",
+        "Planks_C49A7A_matte",
+        "Metal_1F1F22_satin",
+        "Plastic_26262A_matte",
+        "Metal_55585E_satin",
+        "Paint_E6E2D8_matte",
+        "Glass_EFE3C4_glossy"
+      ]
+    }
+  ],
+  "anchors": [],
+  "surfaces": [
+    {
+      "name": "Siding_A6B0B8_matte",
+      "finish": "matte",
+      "note": "Siding: painted wooden lap boards, light grey (#A9A5AA in the video; base shifted to blue against the game's purple sky light); matte, wood grain under the paint. Changes in game with the house colour variants"
+    },
+    {
+      "name": "Paint_D6DBE3_matte",
+      "finish": "matte",
+      "note": "Corner boards, frieze, eave, casings, window sashes, railing, lattice: white painted wood, a cool light grey in the video (base slightly blue so it does not turn cream in the sun); matte"
+    },
+    {
+      "name": "Paint_94817F_matte",
+      "finish": "matte",
+      "note": "Garden and street door: rose-brown painted wood (#97807F in the video); matte. Changes with the house colour variants"
+    },
+    {
+      "name": "Shingles_535F61_matte",
+      "finish": "matte",
+      "note": "Asphalt shingles: neutral grey-mauve (the 0:53 and 0:57 frames read about 137/128/128 on the roof at 20-25 m; the game read 158/140/137 at 24 m with #77756F, then 153/139/138 with #6F7373: the haze adds a lot, so the base went darker and less red); matte, granular, mottled"
+    },
+    {
+      "name": "Metal_9A7C78_satin",
+      "finish": "satin",
+      "note": "Gutter and downspouts: painted aluminium, rose-brown (#9B8284 at the eave in the video); satin"
+    },
+    {
+      "name": "Planks_C49A7A_matte",
+      "finish": "matte",
+      "note": "Decking, joists, rim joists, steps: cedar (#C0A27E at the edge in the video); matte, wood grain"
+    },
+    {
+      "name": "Concrete_A19E99_matte",
+      "finish": "matte",
+      "note": "Foundation band, step, splash blocks: concrete; matte"
+    },
+    {
+      "name": "Glass_C8CED6_glossy",
+      "finish": "glossy",
+      "note": "Window glass: light, reflecting the sky (light-coloured glass in the video); glossy"
+    },
+    {
+      "name": "Metal_1F1F22_satin",
+      "finish": "satin",
+      "note": "Door handles, lamp body: black painted metal; satin"
+    },
+    {
+      "name": "Plastic_26262A_matte",
+      "finish": "matte",
+      "note": "Vent pipe: black plastic (a thin black pipe on the roof in the video); matte"
+    },
+    {
+      "name": "Glass_EFE3C4_glossy",
+      "finish": "glossy",
+      "note": "Lamp bulb: frosted, warm white; glossy"
+    },
+    {
+      "name": "Metal_55585E_satin",
+      "finish": "satin",
+      "note": "Lamp shade: grey enamelled steel (a grey dish on an arm beside the glass door at 0:57 in the video); satin"
+    },
+    {
+      "name": "Paint_E6E2D8_matte",
+      "finish": "matte",
+      "note": "Inside of the lamp shade: white enamel, matte"
+    }
+  ],
+  "external": [
+    {
+      "ref": "ambientcg:PaintedWood009C",
+      "part": "(texture)",
+      "name": "Painted Wood 009 C",
+      "licence": "CC0",
+      "authors": [
+        "ambientCG (Lennart Demes)"
+      ],
+      "page": "https://ambientcg.com/view?id=PaintedWood009C",
+      "attributionRequired": false,
+      "file": "PaintedWood009C_1K-JPG_Color.jpg"
+    },
+    {
+      "ref": "ambientcg:PaintedWood008A",
+      "part": "(texture)",
+      "name": "Painted Wood 008 A",
+      "licence": "CC0",
+      "authors": [
+        "ambientCG (Lennart Demes)"
+      ],
+      "page": "https://ambientcg.com/view?id=PaintedWood008A",
+      "attributionRequired": false,
+      "file": "PaintedWood008A_1K-JPG_Color.jpg"
+    },
+    {
+      "ref": "ambientcg:Wood049",
+      "part": "(texture)",
+      "name": "Wood 049",
+      "licence": "CC0",
+      "authors": [
+        "ambientCG (Lennart Demes)"
+      ],
+      "page": "https://ambientcg.com/view?id=Wood049",
+      "attributionRequired": false,
+      "file": "Wood049_1K-JPG_Color.jpg"
+    }
+  ],
+  "qc": {
+    "zFighting": {
+      "pairs": 0,
+      "cm2": 0.0
+    },
+    "construction": {
+      "shells": 3981,
+      "components": 1,
+      "stray": [],
+      "routes": 4,
+      "attachments": 0,
+      "supports": 0,
+      "problems": []
+    },
+    "holes": {
+      "cameras": 3775,
+      "rays": 5662500,
+      "backface_hits": 0,
+      "hole_points": 0,
+      "edge_grazes": 0,
+      "regions": [],
+      "examples": []
+    },
+    "joints": {
+      "members": 1527,
+      "ends": 4399,
+      "bad": 0,
+      "worst": []
+    }
+  },
+  "tiled": true,
+  "plan": {
+    "purpose": "two-storey house with a side-gabled roof, a deck on the garden side and a porch roof over its right half",
+    "tier": "complex",
+    "category": [
+      "buildings"
+    ],
+    "supports": [
+      "ground"
+    ],
+    "sources": [
+      {
+        "kind": "video",
+        "where": "0:57 (ref 29), 0:41.6 (ref 30), 0:53.5 (ref 31)"
+      }
+    ],
+    "components": [
+      {
+        "name": "Foundation",
+        "role": "structural",
+        "job": "concrete band the walls stand on",
+        "attaches": [
+          "ground"
+        ],
+        "moves": "fixed",
+        "source": "seen"
+      },
+      {
+        "name": "WallCore",
+        "role": "structural",
+        "job": "the frame and sheathing everything else is fixed to",
+        "attaches": [
+          "Foundation"
+        ],
+        "moves": "fixed",
+        "source": "guess"
+      },
+      {
+        "name": "Siding",
+        "role": "structural",
+        "job": "lap boards, each over the one below; ends under the trim",
+        "attaches": [
+          "WallCore"
+        ],
+        "moves": "fixed",
+        "source": "seen"
+      },
+      {
+        "name": "CornerBoards",
+        "role": "structural",
+        "job": "cover the siding ends; tops follow the soffit slope",
+        "attaches": [
+          "WallCore"
+        ],
+        "moves": "fixed",
+        "source": "seen"
+      },
+      {
+        "name": "Casings",
+        "role": "structural",
+        "job": "line the openings, jamb boards inside, cover the board ends",
+        "attaches": [
+          "WallCore"
+        ],
+        "moves": "fixed",
+        "source": "seen"
+      },
+      {
+        "name": "Windows",
+        "role": "functional",
+        "job": "sliding double sashes in the openings",
+        "attaches": [
+          "Casings"
+        ],
+        "moves": "slide",
+        "source": "seen"
+      },
+      {
+        "name": "Doors",
+        "role": "functional",
+        "job": "garden, glass and street doors in their openings",
+        "attaches": [
+          "Casings"
+        ],
+        "moves": "hinge",
+        "source": "seen"
+      },
+      {
+        "name": "Sheathing",
+        "role": "structural",
+        "job": "the roof deck on the walls, under the overhangs",
+        "attaches": [
+          "WallCore"
+        ],
+        "moves": "fixed",
+        "source": "guess"
+      },
+      {
+        "name": "Shingles",
+        "role": "functional",
+        "job": "shed the rain: two layers, over the rake and fascia",
+        "attaches": [
+          "Sheathing"
+        ],
+        "moves": "fixed",
+        "source": "seen"
+      },
+      {
+        "name": "RidgeCaps",
+        "role": "functional",
+        "job": "close the ridge",
+        "attaches": [
+          "Shingles"
+        ],
+        "moves": "fixed",
+        "source": "seen"
+      },
+      {
+        "name": "Fascia",
+        "role": "structural",
+        "job": "eave board the gutter hangs on",
+        "attaches": [
+          "WallCore",
+          "Sheathing"
+        ],
+        "moves": "fixed",
+        "source": "seen"
+      },
+      {
+        "name": "Soffits",
+        "role": "structural",
+        "job": "close the underside of the overhangs",
+        "attaches": [
+          "Fascia",
+          "WallCore"
+        ],
+        "moves": "fixed",
+        "source": "seen"
+      },
+      {
+        "name": "RakeBoards",
+        "role": "structural",
+        "job": "trim the gable edges, cover the fascia's end, cut plumb",
+        "attaches": [
+          "WallCore",
+          "Sheathing"
+        ],
+        "moves": "fixed",
+        "source": "seen"
+      },
+      {
+        "name": "VentPipe",
+        "role": "functional",
+        "job": "plumbing vent through the roof",
+        "attaches": [
+          "Sheathing"
+        ],
+        "moves": "fixed",
+        "source": "seen"
+      },
+      {
+        "name": "Gutter",
+        "role": "functional",
+        "job": "collects the rain at the eave",
+        "attaches": [
+          "Fascia"
+        ],
+        "moves": "fixed",
+        "source": "seen"
+      },
+      {
+        "name": "Downspouts",
+        "role": "functional",
+        "job": "from the gutter's end to the gable wall, down it, out over a splash block",
+        "attaches": [
+          "Gutter"
+        ],
+        "moves": "fixed",
+        "source": "seen"
+      },
+      {
+        "name": "SplashBlocks",
+        "role": "functional",
+        "job": "lead the water away from the wall",
+        "attaches": [
+          "ground"
+        ],
+        "moves": "fixed",
+        "source": "guess"
+      },
+      {
+        "name": "SkirtPosts",
+        "role": "structural",
+        "job": "corner posts of the deck skirt",
+        "attaches": [
+          "ground"
+        ],
+        "moves": "fixed",
+        "source": "guess"
+      },
+      {
+        "name": "DeckFrame",
+        "role": "structural",
+        "job": "ledger on the wall, rim joists, joists every 40 cm",
+        "attaches": [
+          "WallCore",
+          "SkirtPosts"
+        ],
+        "moves": "fixed",
+        "source": "guess"
+      },
+      {
+        "name": "Decking",
+        "role": "structural",
+        "job": "cedar boards resting on the joists and rim joists",
+        "attaches": [
+          "DeckFrame"
+        ],
+        "moves": "fixed",
+        "source": "seen"
+      },
+      {
+        "name": "Lattice",
+        "role": "decorative",
+        "job": "white diagonal skirt behind the posts, hides the frame",
+        "attaches": [
+          "SkirtPosts"
+        ],
+        "moves": "fixed",
+        "source": "seen"
+      },
+      {
+        "name": "Steps",
+        "role": "functional",
+        "job": "notched stringers, treads, risers up to the deck",
+        "attaches": [
+          "DeckFrame",
+          "ground"
+        ],
+        "moves": "fixed",
+        "source": "seen"
+      },
+      {
+        "name": "Railing",
+        "role": "functional",
+        "job": "posts bolted inside the rim joists, rails, balusters",
+        "attaches": [
+          "DeckFrame"
+        ],
+        "moves": "fixed",
+        "source": "seen"
+      },
+      {
+        "name": "PorchPosts",
+        "role": "structural",
+        "job": "carry the porch beam, standing on the decking",
+        "attaches": [
+          "Decking"
+        ],
+        "moves": "fixed",
+        "source": "seen"
+      },
+      {
+        "name": "PorchRoof",
+        "role": "functional",
+        "job": "covers the deck's right half: ledger on the wall, beam on the posts",
+        "attaches": [
+          "WallCore",
+          "PorchPosts"
+        ],
+        "moves": "fixed",
+        "source": "seen"
+      },
+      {
+        "name": "Lamp",
+        "role": "functional",
+        "job": "gooseneck barn light right of the glass door",
+        "attaches": [
+          "WallCore"
+        ],
+        "moves": "fixed",
+        "source": "seen"
+      },
+      {
+        "name": "DoorHandles",
+        "role": "functional",
+        "job": "open the doors",
+        "attaches": [
+          "Doors"
+        ],
+        "moves": "fixed",
+        "source": "guess"
+      }
+    ]
+  },
+  "located": [
+    "Doors",
+    "Downspouts",
+    "Foundation",
+    "Lamp",
+    "Railing",
+    "Windows"
+  ],
+  "features": [
+    {
+      "id": "stairs_carried",
+      "tier": "critical",
+      "components": [
+        "Steps",
+        "DeckFrame"
+      ],
+      "expect": "notched stringers carry the treads from the ground up to the deck frame",
+      "measure": null,
+      "view": "steps_side",
+      "measured": null
+    },
+    {
+      "id": "deck_carried",
+      "tier": "critical",
+      "components": [
+        "DeckFrame",
+        "SkirtPosts",
+        "WallCore"
+      ],
+      "expect": "the deck frame rests on a ledger on the wall and on posts at its outer edge",
+      "measure": null,
+      "view": "deck_under",
+      "measured": null
+    },
+    {
+      "id": "porch_roof_carried",
+      "tier": "critical",
+      "components": [
+        "PorchRoof",
+        "PorchPosts",
+        "WallCore"
+      ],
+      "expect": "the porch roof rests on the wall and on a beam carried by the posts",
+      "measure": null,
+      "view": "garden",
+      "measured": null
+    },
+    {
+      "id": "downspouts",
+      "tier": "important",
+      "components": [
+        "Downspouts",
+        "Gutter",
+        "SplashBlocks"
+      ],
+      "expect": "each downspout leaves the gutter, runs down the wall and ends over a splash block",
+      "measure": "route:Downspout_*",
+      "view": "eave",
+      "measured": "pass"
+    }
+  ],
+  "bevels_mm": {
+    "Body": null,
+    "Deck": 3.0,
+    "Doors": 2.0,
+    "Foundation": null,
+    "Gutters": null,
+    "Hardware": null,
+    "Lamp": null,
+    "LampShade": null,
+    "Porch": null,
+    "Railing": null,
+    "Roof": null,
+    "Trim": 4.0,
+    "Windows": null
+  },
+  "links": {
+    "routes": [
+      {
+        "name": "Downspout_west_garden",
+        "points": [
+          {
+            "x": -8.12,
+            "y": 5.929322,
+            "z": -5.402232
+          },
+          {
+            "x": -8.071,
+            "y": 5.436322,
+            "z": -4.85
+          },
+          {
+            "x": -8.071,
+            "y": 0.36,
+            "z": -4.85
+          },
+          {
+            "x": -8.24,
+            "y": 0.18,
+            "z": -4.85
+          }
+        ],
+        "free": [
+          3
+        ]
+      },
+      {
+        "name": "Downspout_east_garden",
+        "points": [
+          {
+            "x": 8.12,
+            "y": 5.929322,
+            "z": -5.402232
+          },
+          {
+            "x": 8.071,
+            "y": 5.436322,
+            "z": -4.85
+          },
+          {
+            "x": 8.071,
+            "y": 0.36,
+            "z": -4.85
+          },
+          {
+            "x": 8.24,
+            "y": 0.18,
+            "z": -4.85
+          }
+        ],
+        "free": [
+          3
+        ]
+      },
+      {
+        "name": "Downspout_west_street",
+        "points": [
+          {
+            "x": -8.12,
+            "y": 5.929322,
+            "z": 5.402232
+          },
+          {
+            "x": -8.071,
+            "y": 5.436322,
+            "z": 4.85
+          },
+          {
+            "x": -8.071,
+            "y": 0.36,
+            "z": 4.85
+          },
+          {
+            "x": -8.24,
+            "y": 0.18,
+            "z": 4.85
+          }
+        ],
+        "free": [
+          3
+        ]
+      },
+      {
+        "name": "Downspout_east_street",
+        "points": [
+          {
+            "x": 8.12,
+            "y": 5.929322,
+            "z": 5.402232
+          },
+          {
+            "x": 8.071,
+            "y": 5.436322,
+            "z": 4.85
+          },
+          {
+            "x": 8.071,
+            "y": 0.36,
+            "z": 4.85
+          },
+          {
+            "x": 8.24,
+            "y": 0.18,
+            "z": 4.85
+          }
+        ],
+        "free": [
+          3
+        ]
+      }
+    ],
+    "attachments": []
+  },
+  "geometry": "a067cc9ba2372cab",
+  "structure": "cbf735e7a2b19115",
+  "asset": "39582086e2fec4d3",
+  "style_version": "1.1"
+}

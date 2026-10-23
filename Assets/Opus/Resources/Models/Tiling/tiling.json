@@ -1,0 +1,222 @@
+{
+ "materials": [
+  {
+   "name": "asphalt_3tab",
+   "set": "shingle_3tab",
+   "metres": 0.56,
+   "strength": 1.0,
+   "bump": 1.1,
+   "owner": "shed",
+   "kinds": [
+    "Shingles"
+   ]
+  },
+  {
+   "name": "asphalt_blend",
+   "set": "shingle_blend",
+   "metres": 0.56,
+   "strength": 1.0,
+   "bump": 0.9,
+   "owner": "house",
+   "kinds": [
+    "Shingles"
+   ]
+  },
+  {
+   "name": "cedar_decking",
+   "set": "wood_cedar",
+   "metres": 0.9,
+   "strength": 0.85,
+   "bump": 0.9,
+   "owner": "house",
+   "kinds": [
+    "Planks"
+   ]
+  },
+  {
+   "name": "concrete",
+   "set": "concrete",
+   "metres": 1.5,
+   "strength": 0.8,
+   "bump": 0.6,
+   "owner": "",
+   "kinds": [
+    "Concrete",
+    "Stone"
+   ]
+  },
+  {
+   "name": "enamel",
+   "set": "smooth",
+   "metres": 0.4,
+   "strength": 0.1,
+   "bump": 0.1,
+   "owner": "",
+   "kinds": [
+    "Metal",
+    "Paint"
+   ]
+  },
+  {
+   "name": "frosted_glass",
+   "set": "smooth",
+   "metres": 0.6,
+   "strength": 0.0,
+   "bump": 0.6,
+   "owner": "",
+   "kinds": [
+    "Glass"
+   ]
+  },
+  {
+   "name": "glass",
+   "set": "smooth",
+   "metres": 0.6,
+   "strength": 0.0,
+   "bump": 0.0,
+   "owner": "",
+   "kinds": [
+    "Glass"
+   ]
+  },
+  {
+   "name": "lap_siding",
+   "set": "wood_siding",
+   "metres": 1.2,
+   "strength": 0.45,
+   "bump": 0.55,
+   "owner": "house",
+   "kinds": [
+    "Siding"
+   ]
+  },
+  {
+   "name": "painted_metal",
+   "set": "smooth",
+   "metres": 0.6,
+   "strength": 0.25,
+   "bump": 0.3,
+   "owner": "",
+   "kinds": [
+    "Metal"
+   ]
+  },
+  {
+   "name": "painted_trim",
+   "set": "paint_thick",
+   "metres": 0.8,
+   "strength": 0.35,
+   "bump": 0.3,
+   "owner": "",
+   "kinds": [
+    "Paint"
+   ]
+  },
+  {
+   "name": "plastic",
+   "set": "smooth",
+   "metres": 0.25,
+   "strength": 0.4,
+   "bump": 0.45,
+   "owner": "",
+   "kinds": [
+    "Plastic"
+   ]
+  },
+  {
+   "name": "rough_boards",
+   "set": "wood_rough",
+   "metres": 1.0,
+   "strength": 0.7,
+   "bump": 1.0,
+   "owner": "shed",
+   "kinds": [
+    "Siding"
+   ]
+  }
+ ],
+ "models": [
+  {
+   "model": "house",
+   "slots": [
+    {
+     "slot": "Concrete_A19E99_matte",
+     "material": "concrete"
+    },
+    {
+     "slot": "Glass_C8CED6_glossy",
+     "material": "glass"
+    },
+    {
+     "slot": "Glass_EFE3C4_glossy",
+     "material": "frosted_glass"
+    },
+    {
+     "slot": "Metal_1F1F22_satin",
+     "material": "painted_metal"
+    },
+    {
+     "slot": "Metal_55585E_satin",
+     "material": "enamel"
+    },
+    {
+     "slot": "Metal_9A7C78_satin",
+     "material": "painted_metal"
+    },
+    {
+     "slot": "Paint_94817F_matte",
+     "material": "painted_trim"
+    },
+    {
+     "slot": "Paint_D6DBE3_matte",
+     "material": "painted_trim"
+    },
+    {
+     "slot": "Paint_E6E2D8_matte",
+     "material": "enamel"
+    },
+    {
+     "slot": "Planks_C49A7A_matte",
+     "material": "cedar_decking"
+    },
+    {
+     "slot": "Plastic_26262A_matte",
+     "material": "plastic"
+    },
+    {
+     "slot": "Shingles_535F61_matte",
+     "material": "asphalt_blend"
+    },
+    {
+     "slot": "Siding_A6B0B8_matte",
+     "material": "lap_siding"
+    }
+   ]
+  },
+  {
+   "model": "shed",
+   "slots": [
+    {
+     "slot": "Glass_30363A_glossy",
+     "material": "glass"
+    },
+    {
+     "slot": "Metal_1D1D20_satin",
+     "material": "painted_metal"
+    },
+    {
+     "slot": "Paint_DADCE0_matte",
+     "material": "painted_trim"
+    },
+    {
+     "slot": "Shingles_2F352D_matte",
+     "material": "asphalt_3tab"
+    },
+    {
+     "slot": "Siding_849CA4_matte",
+     "material": "rough_boards"
+    }
+   ]
+  }
+ ]
+}

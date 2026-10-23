@@ -1,0 +1,517 @@
+{
+  "model": "trimmer",
+  "generator": "tools/blender/models/trimmer.py",
+  "blender": "5.2.3 LTS",
+  "objects": [
+    {
+      "name": "Shaft",
+      "position": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "boundsMin": {
+        "x": -0.0145,
+        "y": -0.0145,
+        "z": -1.0
+      },
+      "boundsMax": {
+        "x": 0.0145,
+        "y": 0.0145,
+        "z": -0.0
+      },
+      "triangles": 80,
+      "vertices": 42,
+      "closed": true,
+      "foliage": false,
+      "volume": 0.000649708,
+      "materials": [
+        "Atlas_trimmer"
+      ]
+    },
+    {
+      "name": "Motor",
+      "position": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "boundsMin": {
+        "x": -0.0775,
+        "y": -0.09351,
+        "z": -0.432
+      },
+      "boundsMax": {
+        "x": 0.0775,
+        "y": 0.091,
+        "z": 0.022
+      },
+      "triangles": 2376,
+      "vertices": 1206,
+      "closed": true,
+      "foliage": false,
+      "volume": 0.008196775,
+      "materials": [
+        "Atlas_trimmer"
+      ]
+    },
+    {
+      "name": "DHandle",
+      "position": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "boundsMin": {
+        "x": -0.100995,
+        "y": -0.026,
+        "z": -0.026
+      },
+      "boundsMax": {
+        "x": 0.100995,
+        "y": 0.171,
+        "z": 0.026
+      },
+      "triangles": 2224,
+      "vertices": 1118,
+      "closed": true,
+      "foliage": false,
+      "volume": 0.000546783,
+      "materials": [
+        "Atlas_trimmer"
+      ]
+    },
+    {
+      "name": "Head",
+      "position": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "boundsMin": {
+        "x": -0.137716,
+        "y": -0.168,
+        "z": -0.137794
+      },
+      "boundsMax": {
+        "x": 0.137716,
+        "y": 0.025,
+        "z": 0.108
+      },
+      "triangles": 3260,
+      "vertices": 1648,
+      "closed": true,
+      "foliage": false,
+      "volume": 0.003169226,
+      "materials": [
+        "Atlas_trimmer"
+      ]
+    },
+    {
+      "name": "Line",
+      "position": {
+        "x": 0.0,
+        "y": -0.132,
+        "z": 0.0
+      },
+      "boundsMin": {
+        "x": -0.18,
+        "y": -0.001299,
+        "z": -0.18
+      },
+      "boundsMax": {
+        "x": 0.18,
+        "y": 0.001299,
+        "z": 0.18
+      },
+      "triangles": 40,
+      "vertices": 24,
+      "closed": true,
+      "foliage": false,
+      "volume": 4.209e-06,
+      "materials": [
+        "Atlas_trimmer"
+      ]
+    },
+    {
+      "name": "LineTips",
+      "position": {
+        "x": 0.0,
+        "y": -0.132,
+        "z": 0.0
+      },
+      "boundsMin": {
+        "x": -0.120285,
+        "y": -0.005296,
+        "z": -0.001473
+      },
+      "boundsMax": {
+        "x": 0.120285,
+        "y": 0.001296,
+        "z": 0.013473
+      },
+      "triangles": 40,
+      "vertices": 24,
+      "closed": true,
+      "foliage": false,
+      "volume": 7.4e-07,
+      "materials": [
+        "Atlas_trimmer"
+      ]
+    }
+  ],
+  "anchors": [
+    {
+      "name": "Spool",
+      "position": {
+        "x": 0.0,
+        "y": -0.132,
+        "z": 0.0
+      }
+    },
+    {
+      "name": "BodyFront",
+      "position": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      }
+    },
+    {
+      "name": "BatteryBack",
+      "position": {
+        "x": 0.0,
+        "y": 0.016,
+        "z": -0.432
+      }
+    },
+    {
+      "name": "HandleTop",
+      "position": {
+        "x": 0.0,
+        "y": 0.155,
+        "z": 0.0
+      }
+    },
+    {
+      "name": "HeadCenter",
+      "position": {
+        "x": 0.0,
+        "y": -0.088,
+        "z": 0.0
+      }
+    }
+  ],
+  "surfaces": [
+    {
+      "name": "Source_red_glossy",
+      "finish": "glossy",
+      "note": "Upper shell of the body and its ridge: red glossy ABS; light streaks along the edges in the video"
+    },
+    {
+      "name": "Source_battery_satin",
+      "finish": "satin",
+      "note": "Battery: black plastic case; its edges catch the light in the video"
+    },
+    {
+      "name": "Source_white_satin",
+      "finish": "satin",
+      "note": "Lower shell of the body: light grey-white plastic; the lower half of the body from end to end in the video"
+    },
+    {
+      "name": "Source_label_matte",
+      "finish": "matte",
+      "note": "Side lettering strip: white print; a thin white line on the red side in the video"
+    },
+    {
+      "name": "Source_black_matte",
+      "finish": "matte",
+      "note": "D handle, head puck, guard, clamps: black textured plastic; flat dark in the video"
+    },
+    {
+      "name": "Source_rubber_matte",
+      "finish": "matte",
+      "note": "Trigger: dark rubber (under the body, a guess)"
+    },
+    {
+      "name": "Source_shaft_satin",
+      "finish": "satin",
+      "note": "Shaft: black painted aluminium tube; a thick dark rod in the video"
+    },
+    {
+      "name": "Source_orange_satin",
+      "finish": "satin",
+      "note": "Ring on the gearbox knob and the bump knob: orange-red plastic; a reddish ring on the knob on top of the head in the video"
+    },
+    {
+      "name": "Source_line_matte",
+      "finish": "matte",
+      "note": "Line: nylon (a guess; not distinguishable in the video)"
+    },
+    {
+      "name": "Source_recess_matte",
+      "finish": "matte",
+      "note": "The hollow in the battery's back face: darker inside the frame in the video"
+    },
+    {
+      "name": "Source_latch_satin",
+      "finish": "satin",
+      "note": "Battery latch: red; a red part on the right inside the hollow in the video"
+    }
+  ],
+  "atlas": {
+    "size": 2048,
+    "textures": {
+      "color": "Assets/Opus/Resources/Models/Textures/trimmer/trimmer_color.png",
+      "normal": "Assets/Opus/Resources/Models/Textures/trimmer/trimmer_normal.png",
+      "orm": "Assets/Opus/Resources/Models/Textures/trimmer/trimmer_orm.png"
+    },
+    "texelDensity": {
+      "Shaft": 1473,
+      "Motor": 1473,
+      "DHandle": 1473,
+      "Head": 1473,
+      "Line": 1473,
+      "LineTips": 1473
+    },
+    "ao": 0.05
+  },
+  "qc": {
+    "zFighting": {
+      "pairs": 0,
+      "cm2": 0.0
+    },
+    "construction": {
+      "shells": 25,
+      "components": 5,
+      "stray": [],
+      "routes": 0,
+      "attachments": 0,
+      "supports": 0,
+      "problems": []
+    },
+    "holes": {
+      "cameras": 1800,
+      "rays": 2700000,
+      "backface_hits": 0,
+      "hole_points": 0,
+      "edge_grazes": 0,
+      "regions": [],
+      "examples": []
+    },
+    "joints": {
+      "members": 7,
+      "ends": 0,
+      "bad": 0,
+      "worst": []
+    },
+    "texels": {
+      "atlas": 2048,
+      "density_px_per_m": {
+        "Shaft": 1473,
+        "Motor": 1473,
+        "DHandle": 1473,
+        "Head": 1473,
+        "Line": 1473,
+        "LineTips": 1473
+      },
+      "bands_percent": {
+        "<1": 0.2,
+        "1-2": 0.3,
+        "2-4": 3.9,
+        ">=4": 95.7
+      },
+      "thin_faces": 0,
+      "worst": []
+    },
+    "atlasUsedPercent": 41.9
+  },
+  "plan": {
+    "purpose": "battery string trimmer: held in both hands, the spinning line cuts grass along edges",
+    "tier": "complex",
+    "category": [
+      "machines"
+    ],
+    "supports": [
+      "hands"
+    ],
+    "sources": [
+      {
+        "kind": "video",
+        "where": "0:07-0:10, 0:50-0:52, first person"
+      }
+    ],
+    "components": [
+      {
+        "name": "Motor",
+        "role": "functional",
+        "job": "body with the motor, in the rear hand",
+        "attaches": [
+          "Shaft",
+          "hands"
+        ],
+        "moves": "fixed",
+        "source": "seen"
+      },
+      {
+        "name": "Battery",
+        "role": "functional",
+        "job": "powers the motor; slides into the body's back, red latch",
+        "attaches": [
+          "Motor"
+        ],
+        "moves": "fixed",
+        "source": "seen"
+      },
+      {
+        "name": "Trigger",
+        "role": "functional",
+        "job": "switches the motor, under the body",
+        "attaches": [
+          "Motor",
+          "hands"
+        ],
+        "moves": "hinge",
+        "source": "guess"
+      },
+      {
+        "name": "Shaft",
+        "role": "structural",
+        "job": "carries the head; the drive runs inside it",
+        "attaches": [
+          "Motor"
+        ],
+        "moves": "fixed",
+        "source": "seen"
+      },
+      {
+        "name": "DHandle",
+        "role": "functional",
+        "job": "the front hand's grip, clamped on the shaft",
+        "attaches": [
+          "Shaft",
+          "hands"
+        ],
+        "moves": "fixed",
+        "source": "seen"
+      },
+      {
+        "name": "Gearbox",
+        "role": "functional",
+        "job": "turns the drive down to the spool; knob ringed in orange",
+        "attaches": [
+          "Shaft"
+        ],
+        "moves": "fixed",
+        "source": "seen"
+      },
+      {
+        "name": "Head",
+        "role": "functional",
+        "job": "flat puck carrying the spool",
+        "attaches": [
+          "Gearbox"
+        ],
+        "moves": "spin",
+        "source": "seen"
+      },
+      {
+        "name": "Guard",
+        "role": "functional",
+        "job": "narrow lip at the back, keeps cuttings off the user",
+        "attaches": [
+          "Gearbox"
+        ],
+        "moves": "fixed",
+        "source": "seen"
+      },
+      {
+        "name": "Spool",
+        "role": "functional",
+        "job": "holds the line, bump knob underneath",
+        "attaches": [
+          "Head"
+        ],
+        "moves": "spin",
+        "source": "guess"
+      },
+      {
+        "name": "Line",
+        "role": "functional",
+        "job": "cuts the grass; out of the spool's two holes",
+        "attaches": [
+          "Spool"
+        ],
+        "moves": "spin",
+        "source": "seen"
+      }
+    ]
+  },
+  "located": [
+    "DHandle",
+    "Head",
+    "Line",
+    "Motor",
+    "Shaft",
+    "Spool"
+  ],
+  "features": [
+    {
+      "id": "head_drive",
+      "tier": "critical",
+      "components": [
+        "Shaft",
+        "Gearbox",
+        "Head",
+        "Spool",
+        "Line"
+      ],
+      "expect": "the shaft enters the gearbox, the head carries the spool and the line leaves its two holes",
+      "measure": null,
+      "view": "head",
+      "measured": null
+    },
+    {
+      "id": "two_hands",
+      "tier": "critical",
+      "components": [
+        "Motor",
+        "DHandle",
+        "Shaft"
+      ],
+      "expect": "the rear hand on the body, the front hand on the D handle clamped across the shaft",
+      "measure": null,
+      "view": "handle",
+      "measured": null
+    },
+    {
+      "id": "battery",
+      "tier": "important",
+      "components": [
+        "Battery",
+        "Motor"
+      ],
+      "expect": "the battery sits in the body's back with its latch",
+      "measure": null,
+      "view": "back",
+      "measured": null
+    }
+  ],
+  "bevels_mm": {
+    "DHandle": 1.2,
+    "Head": 1.2,
+    "Line": null,
+    "LineTips": null,
+    "Motor": 1.8,
+    "Shaft": null
+  },
+  "unchamfered": {
+    "Line": "a 3 mm nylon cord: thinner than the chamfer band allows",
+    "LineTips": "a 3 mm nylon cord: thinner than the chamfer band allows",
+    "Shaft": "a round tube: no hard edge along it, and its two ends sit inside the motor's neck and the gearbox"
+  },
+  "geometry": "21367a5d3d9dbe1e",
+  "structure": "19871068311f50ab",
+  "asset": "380651e146702735",
+  "style_version": "1.1"
+}

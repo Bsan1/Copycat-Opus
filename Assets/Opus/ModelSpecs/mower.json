@@ -1,0 +1,532 @@
+{
+  "model": "mower",
+  "generator": "tools/blender/models/mower.py",
+  "blender": "5.2.3 LTS",
+  "objects": [
+    {
+      "name": "Housing",
+      "position": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "boundsMin": {
+        "x": -0.3301,
+        "y": 0.04,
+        "z": -0.316
+      },
+      "boundsMax": {
+        "x": 0.3301,
+        "y": 0.271,
+        "z": 0.348667
+      },
+      "triangles": 7362,
+      "vertices": 3725,
+      "closed": true,
+      "foliage": false,
+      "volume": 0.050474989,
+      "materials": [
+        "Metal_C21F22_glossy",
+        "Metal_8F1A1F_glossy",
+        "Metal_2A2B2F_satin",
+        "Plastic_2C2D32_matte"
+      ]
+    },
+    {
+      "name": "Motor",
+      "position": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "boundsMin": {
+        "x": -0.123989,
+        "y": 0.18,
+        "z": -0.195
+      },
+      "boundsMax": {
+        "x": 0.123989,
+        "y": 0.413,
+        "z": 0.173991
+      },
+      "triangles": 4332,
+      "vertices": 2190,
+      "closed": true,
+      "foliage": false,
+      "volume": 0.013535715,
+      "materials": [
+        "Plastic_2F2E31_matte",
+        "Metal_3E4046_satin",
+        "Metal_A3A6AC_metallic",
+        "Plastic_2C2D32_matte",
+        "Rubber_3A3B40_matte",
+        "Metal_2A2B2F_satin",
+        "Plastic_252427_matte"
+      ]
+    },
+    {
+      "name": "Handle",
+      "position": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "boundsMin": {
+        "x": -0.383874,
+        "y": 0.1665,
+        "z": -1.0535
+      },
+      "boundsMax": {
+        "x": 0.383841,
+        "y": 0.903219,
+        "z": -0.088652
+      },
+      "triangles": 8930,
+      "vertices": 4509,
+      "closed": true,
+      "foliage": false,
+      "volume": 0.002331153,
+      "materials": [
+        "Metal_2A2B2F_satin",
+        "Rubber_3A3B40_matte",
+        "Plastic_2C2D32_matte",
+        "Metal_A3A6AC_metallic",
+        "Rubber_232327_matte"
+      ]
+    }
+  ],
+  "anchors": [
+    {
+      "name": "Handle_Right",
+      "position": {
+        "x": 0.34,
+        "y": 0.88,
+        "z": -1.03
+      }
+    },
+    {
+      "name": "Axle_Front_Right",
+      "position": {
+        "x": 0.276,
+        "y": 0.095,
+        "z": 0.22
+      }
+    },
+    {
+      "name": "Axle_Rear_Right",
+      "position": {
+        "x": 0.316,
+        "y": 0.115,
+        "z": -0.23
+      }
+    },
+    {
+      "name": "Handle_Left",
+      "position": {
+        "x": -0.34,
+        "y": 0.88,
+        "z": -1.03
+      }
+    },
+    {
+      "name": "Axle_Front_Left",
+      "position": {
+        "x": -0.276,
+        "y": 0.095,
+        "z": 0.22
+      }
+    },
+    {
+      "name": "Axle_Rear_Left",
+      "position": {
+        "x": -0.316,
+        "y": 0.115,
+        "z": -0.23
+      }
+    }
+  ],
+  "surfaces": [
+    {
+      "name": "Metal_C21F22_glossy",
+      "finish": "glossy",
+      "note": "Housing: red baked-paint sheet metal; thin bright lines on the dome and the edges in the video"
+    },
+    {
+      "name": "Metal_8F1A1F_glossy",
+      "finish": "glossy",
+      "note": "Rear flap: the same painted sheet metal as the housing, dark red; a dark red area on top of the rear body in the video"
+    },
+    {
+      "name": "Plastic_2F2E31_matte",
+      "finish": "matte",
+      "note": "Engine cover: textured black plastic; no highlights in the video, only the upward faces are light"
+    },
+    {
+      "name": "Plastic_252427_matte",
+      "finish": "matte",
+      "note": "Inside the cover's rear hollows: the same plastic, in shadow; darker in the video"
+    },
+    {
+      "name": "Metal_3E4046_satin",
+      "finish": "satin",
+      "note": "Engine block: painted cast aluminium (a guess; hidden under the cover in the video)"
+    },
+    {
+      "name": "Metal_A3A6AC_metallic",
+      "finish": "metallic",
+      "note": "Starter cover, control bar, bolts: chromed/galvanised steel; a bright white reflection in the video"
+    },
+    {
+      "name": "Plastic_2C2D32_matte",
+      "finish": "matte",
+      "note": "Fuel cap, starter rope handle, knobs, bushings: black plastic; flat dark in the video"
+    },
+    {
+      "name": "Metal_2A2B2F_satin",
+      "finish": "satin",
+      "note": "Handle tubes, wheel plates, hinge: black powder-coated steel; the handles are flat dark without shine in the video"
+    },
+    {
+      "name": "Rubber_3A3B40_matte",
+      "finish": "matte",
+      "note": "Grip foam and primer bulb: foam/rubber (a guess; off screen)"
+    },
+    {
+      "name": "Rubber_232327_matte",
+      "finish": "matte",
+      "note": "Control cable sheath: black PVC"
+    }
+  ],
+  "qc": {
+    "zFighting": {
+      "pairs": 0,
+      "cm2": 0.0
+    },
+    "construction": {
+      "shells": 56,
+      "components": 1,
+      "stray": [],
+      "routes": 1,
+      "attachments": 0,
+      "supports": 2,
+      "problems": []
+    },
+    "holes": {
+      "cameras": 300,
+      "rays": 450000,
+      "backface_hits": 0,
+      "hole_points": 0,
+      "edge_grazes": 0,
+      "regions": [],
+      "examples": []
+    },
+    "joints": {
+      "members": 16,
+      "ends": 8,
+      "bad": 0,
+      "worst": []
+    }
+  },
+  "plan": {
+    "purpose": "push mower: cuts the grass while the player pushes it from behind by the handle",
+    "tier": "complex",
+    "category": [
+      "machines"
+    ],
+    "supports": [
+      "wheels",
+      "hands"
+    ],
+    "sources": [
+      {
+        "kind": "video",
+        "where": "0:02, 0:46, 1:12 (seen only from behind and above)"
+      }
+    ],
+    "components": [
+      {
+        "name": "Axles",
+        "role": "structural",
+        "job": "pins the wheels turn on (the wheels are wheel.py's model)",
+        "attaches": [
+          "WheelPlates",
+          "wheels"
+        ],
+        "moves": "fixed",
+        "source": "guess"
+      },
+      {
+        "name": "WheelPlates",
+        "role": "structural",
+        "job": "carry the axles, bolted to the deck",
+        "attaches": [
+          "Deck"
+        ],
+        "moves": "fixed",
+        "source": "guess"
+      },
+      {
+        "name": "Deck",
+        "role": "structural",
+        "job": "red deck: shields the blade, carries the engine",
+        "attaches": [
+          "WheelPlates"
+        ],
+        "moves": "fixed",
+        "source": "seen"
+      },
+      {
+        "name": "RearBody",
+        "role": "structural",
+        "job": "stepped rear body behind the deck",
+        "attaches": [
+          "Deck"
+        ],
+        "moves": "fixed",
+        "source": "seen"
+      },
+      {
+        "name": "RearFlap",
+        "role": "functional",
+        "job": "dark red flap over the rear discharge, hinged on a pin across the body",
+        "attaches": [
+          "RearBody"
+        ],
+        "moves": "hinge",
+        "source": "seen"
+      },
+      {
+        "name": "Engine",
+        "role": "functional",
+        "job": "drives the blade; block, fuel tank and carburettor under the cover (never seen)",
+        "attaches": [
+          "Deck"
+        ],
+        "moves": "fixed",
+        "source": "guess"
+      },
+      {
+        "name": "EngineCover",
+        "role": "structural",
+        "job": "dark grey cover: ridge, two hollows, a lip",
+        "attaches": [
+          "Engine"
+        ],
+        "moves": "fixed",
+        "source": "seen"
+      },
+      {
+        "name": "AirGrille",
+        "role": "functional",
+        "job": "cooling air in through the cover's front",
+        "attaches": [
+          "EngineCover"
+        ],
+        "moves": "fixed",
+        "source": "seen"
+      },
+      {
+        "name": "FuelCap",
+        "role": "functional",
+        "job": "closes the tank's neck coming up through the left hollow (knurled)",
+        "attaches": [
+          "Engine"
+        ],
+        "moves": "fixed",
+        "source": "seen"
+      },
+      {
+        "name": "PrimerBulb",
+        "role": "functional",
+        "job": "primes the carburettor under the right hollow",
+        "attaches": [
+          "Engine"
+        ],
+        "moves": "fixed",
+        "source": "seen"
+      },
+      {
+        "name": "Starter",
+        "role": "functional",
+        "job": "recoil starter; its rope handle rests on the cover, the rope stays at the engine",
+        "attaches": [
+          "Engine"
+        ],
+        "moves": "fixed",
+        "source": "seen"
+      },
+      {
+        "name": "BrakeTab",
+        "role": "functional",
+        "job": "the engine brake lever the cable pulls",
+        "attaches": [
+          "Engine"
+        ],
+        "moves": "hinge",
+        "source": "guess"
+      },
+      {
+        "name": "LowerTubes",
+        "role": "structural",
+        "job": "handle tubes bolted to the rear plates",
+        "attaches": [
+          "WheelPlates"
+        ],
+        "moves": "fixed",
+        "source": "seen"
+      },
+      {
+        "name": "UpperTube",
+        "role": "structural",
+        "job": "folding U tube, wing nuts at the fold",
+        "attaches": [
+          "LowerTubes"
+        ],
+        "moves": "hinge",
+        "source": "guess"
+      },
+      {
+        "name": "Foam",
+        "role": "functional",
+        "job": "the grip the hands push on",
+        "attaches": [
+          "UpperTube",
+          "hands"
+        ],
+        "moves": "fixed",
+        "source": "guess"
+      },
+      {
+        "name": "ControlBar",
+        "role": "functional",
+        "job": "held against the grip to keep the engine running",
+        "attaches": [
+          "UpperTube",
+          "hands"
+        ],
+        "moves": "hinge",
+        "source": "guess"
+      },
+      {
+        "name": "ControlCable",
+        "role": "functional",
+        "job": "from the bar's tab down the handle to the brake tab",
+        "attaches": [
+          "ControlBar",
+          "BrakeTab",
+          "Clips"
+        ],
+        "moves": "flex",
+        "source": "guess"
+      },
+      {
+        "name": "Clips",
+        "role": "structural",
+        "job": "hold the cable to the tubes, the rear body and the deck",
+        "attaches": [
+          "LowerTubes",
+          "UpperTube",
+          "RearBody"
+        ],
+        "moves": "fixed",
+        "source": "guess"
+      }
+    ]
+  },
+  "located": [
+    "Axles",
+    "ControlCable",
+    "Foam"
+  ],
+  "features": [
+    {
+      "id": "control_chain",
+      "tier": "critical",
+      "components": [
+        "ControlBar",
+        "ControlCable",
+        "Clips",
+        "BrakeTab"
+      ],
+      "expect": "the bar's tab, the cable clipped down the handle and the engine's brake tab form one chain",
+      "measure": "route:ControlCable",
+      "view": "handle_top",
+      "measured": "pass"
+    },
+    {
+      "id": "on_wheels",
+      "tier": "critical",
+      "components": [
+        "Axles",
+        "WheelPlates"
+      ],
+      "expect": "four axle pins in plates bolted to the deck carry the wheels",
+      "measure": "support:wheels",
+      "view": "cable",
+      "measured": "pass"
+    },
+    {
+      "id": "push_grip",
+      "tier": "critical",
+      "components": [
+        "Foam",
+        "ControlBar"
+      ],
+      "expect": "the hands push the foam grip and hold the bar against it",
+      "measure": "support:hands",
+      "view": "handle_top",
+      "measured": "pass"
+    },
+    {
+      "id": "starter",
+      "tier": "important",
+      "components": [
+        "Starter"
+      ],
+      "expect": "the recoil starter's handle rests at its guide on the engine, no loose rope",
+      "measure": null,
+      "view": "motor",
+      "measured": null
+    }
+  ],
+  "bevels_mm": {
+    "Handle": 1.5,
+    "Housing": 2.5,
+    "Motor": 2.0
+  },
+  "links": {
+    "routes": [
+      {
+        "name": "ControlCable",
+        "points": [
+          {
+            "x": 0.351525,
+            "y": 0.766,
+            "z": -0.895886
+          },
+          {
+            "x": 0.206,
+            "y": 0.2136,
+            "z": -0.25
+          },
+          {
+            "x": 0.15,
+            "y": 0.1725,
+            "z": -0.172
+          },
+          {
+            "x": 0.083,
+            "y": 0.234,
+            "z": -0.09
+          }
+        ],
+        "free": []
+      }
+    ],
+    "attachments": []
+  },
+  "geometry": "62351b04a2d62750",
+  "structure": "5a4046c742c427c9",
+  "asset": "856e2578b690e5e7",
+  "style_version": "1.1"
+}

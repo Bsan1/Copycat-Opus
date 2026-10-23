@@ -1,0 +1,206 @@
+{
+  "model": "calibration",
+  "generator": "tools/blender/models/calibration.py",
+  "blender": "5.2.3 LTS",
+  "objects": [
+    {
+      "name": "Cube",
+      "position": {
+        "x": -0.0,
+        "y": 0.0,
+        "z": -0.0
+      },
+      "boundsMin": {
+        "x": -0.5,
+        "y": 0.0,
+        "z": -0.5
+      },
+      "boundsMax": {
+        "x": 0.5,
+        "y": 1.0,
+        "z": 0.5
+      },
+      "triangles": 108,
+      "vertices": 56,
+      "closed": true,
+      "foliage": false,
+      "volume": 0.999497754,
+      "materials": [
+        "Concrete_C9C3B8_matte"
+      ]
+    },
+    {
+      "name": "Arrow_Front",
+      "position": {
+        "x": -0.0,
+        "y": 0.0,
+        "z": -0.0
+      },
+      "boundsMin": {
+        "x": -0.072,
+        "y": 0.428,
+        "z": 0.45
+      },
+      "boundsMax": {
+        "x": 0.072,
+        "y": 0.572,
+        "z": 1.1
+      },
+      "triangles": 192,
+      "vertices": 98,
+      "closed": true,
+      "foliage": false,
+      "volume": 0.002705263,
+      "materials": [
+        "Paint_3D6FD6_satin"
+      ]
+    },
+    {
+      "name": "Arrow_Right",
+      "position": {
+        "x": -0.0,
+        "y": 0.0,
+        "z": -0.0
+      },
+      "boundsMin": {
+        "x": 0.45,
+        "y": 0.428,
+        "z": -0.072
+      },
+      "boundsMax": {
+        "x": 0.9,
+        "y": 0.572,
+        "z": 0.072
+      },
+      "triangles": 192,
+      "vertices": 98,
+      "closed": true,
+      "foliage": false,
+      "volume": 0.001909107,
+      "materials": [
+        "Paint_D6453D_satin"
+      ]
+    },
+    {
+      "name": "Arrow_Up",
+      "position": {
+        "x": -0.0,
+        "y": 0.0,
+        "z": -0.0
+      },
+      "boundsMin": {
+        "x": -0.072,
+        "y": 0.95,
+        "z": -0.072
+      },
+      "boundsMax": {
+        "x": 0.072,
+        "y": 1.3,
+        "z": 0.072
+      },
+      "triangles": 192,
+      "vertices": 98,
+      "closed": true,
+      "foliage": false,
+      "volume": 0.00152673,
+      "materials": [
+        "Paint_4CA64A_satin"
+      ]
+    },
+    {
+      "name": "Marker",
+      "position": {
+        "x": 0.7,
+        "y": 0.2,
+        "z": 0.7
+      },
+      "boundsMin": {
+        "x": -0.08,
+        "y": -0.08,
+        "z": -0.08
+      },
+      "boundsMax": {
+        "x": 0.08,
+        "y": 0.08,
+        "z": 0.08
+      },
+      "triangles": 528,
+      "vertices": 266,
+      "closed": true,
+      "foliage": false,
+      "volume": 0.002084122,
+      "materials": [
+        "Paint_E8C23A_satin"
+      ]
+    }
+  ],
+  "anchors": [],
+  "surfaces": [
+    {
+      "name": "Concrete_C9C3B8_matte",
+      "finish": "matte",
+      "note": "Calibration cube (scale and axis check)"
+    },
+    {
+      "name": "Paint_3D6FD6_satin",
+      "finish": "satin",
+      "note": "Front arrow (+Z)"
+    },
+    {
+      "name": "Paint_D6453D_satin",
+      "finish": "satin",
+      "note": "Right arrow (+X)"
+    },
+    {
+      "name": "Paint_4CA64A_satin",
+      "finish": "satin",
+      "note": "Up arrow (+Y)"
+    },
+    {
+      "name": "Paint_E8C23A_satin",
+      "finish": "satin",
+      "note": "Position marker"
+    }
+  ],
+  "qc": {
+    "zFighting": {
+      "pairs": 0,
+      "cm2": 0.0
+    },
+    "construction": {
+      "shells": 4,
+      "components": 1,
+      "stray": [],
+      "routes": 0,
+      "attachments": 0,
+      "supports": 0,
+      "problems": []
+    },
+    "holes": {
+      "cameras": 300,
+      "rays": 450000,
+      "backface_hits": 0,
+      "hole_points": 0,
+      "edge_grazes": 0,
+      "regions": [],
+      "examples": []
+    },
+    "joints": {
+      "members": 2,
+      "ends": 64,
+      "bad": 0,
+      "worst": []
+    }
+  },
+  "bevels_mm": {
+    "Arrow_Front": null,
+    "Arrow_Right": null,
+    "Arrow_Up": null,
+    "Cube": 12.0,
+    "Marker": null
+  },
+  "geometry": "89c4fb9a9890e24a",
+  "structure": "10b59a625918e0cf",
+  "asset": "3190cffc30689d4f",
+  "style_version": "1.1"
+}

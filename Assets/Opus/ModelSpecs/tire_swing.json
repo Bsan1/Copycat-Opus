@@ -1,0 +1,313 @@
+{
+  "model": "tire_swing",
+  "generator": "tools/blender/models/tire_swing.py",
+  "blender": "5.2.3 LTS",
+  "objects": [
+    {
+      "name": "TireSwing",
+      "position": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "boundsMin": {
+        "x": 1.789979,
+        "y": 0.465051,
+        "z": 0.681235
+      },
+      "boundsMax": {
+        "x": 2.419877,
+        "y": 4.086093,
+        "z": 0.995294
+      },
+      "triangles": 72564,
+      "vertices": 36336,
+      "closed": true,
+      "foliage": false,
+      "volume": 0.012651649,
+      "materials": [
+        "Atlas_tire_swing"
+      ]
+    }
+  ],
+  "anchors": [],
+  "surfaces": [
+    {
+      "name": "Source_rope_matte",
+      "finish": "matte",
+      "note": "Swing rope: 3-strand hemp rope, every strand modelled, its yarns in a generated texture; beige in the video, clearly twisted, matte"
+    },
+    {
+      "name": "Source_tire_matte",
+      "finish": "matte",
+      "note": "Swing tire: old car tire rubber; dark olive brown-grey in the video, matte, worn, scuffed and dusty"
+    }
+  ],
+  "atlas": {
+    "size": 2048,
+    "textures": {
+      "color": "Assets/Opus/Resources/Models/Textures/tire_swing/tire_swing_color.png",
+      "normal": "Assets/Opus/Resources/Models/Textures/tire_swing/tire_swing_normal.png",
+      "orm": "Assets/Opus/Resources/Models/Textures/tire_swing/tire_swing_orm.png"
+    },
+    "texelDensity": {
+      "TireSwing": 1000
+    },
+    "ao": 0.15
+  },
+  "qc": {
+    "rope": {
+      "samples": 1051,
+      "lengthM": 6.034,
+      "closestRopeToRope_R": 1.953,
+      "closestAt": [
+        "tire_bend",
+        "tire_hitches"
+      ],
+      "tightestBend_D": 0.897,
+      "tightestAt": "branch_tail",
+      "loopGapToTireMm": {
+        "min": -1.39,
+        "max": 60.67,
+        "touchingPercent": 67.3
+      },
+      "tireCenter": [
+        2.1049,
+        0.78,
+        0.8015
+      ],
+      "hangTop": [
+        2.1049,
+        3.975,
+        0.8015
+      ]
+    },
+    "zFighting": {
+      "pairs": 0,
+      "cm2": 0.0
+    },
+    "construction": {
+      "shells": 28,
+      "components": 1,
+      "stray": [],
+      "routes": 1,
+      "attachments": 0,
+      "supports": 1,
+      "problems": []
+    },
+    "holes": {
+      "cameras": 300,
+      "rays": 450000,
+      "backface_hits": 0,
+      "hole_points": 0,
+      "edge_grazes": 0,
+      "regions": [],
+      "examples": []
+    },
+    "joints": {
+      "members": 27,
+      "ends": 0,
+      "bad": 0,
+      "worst": []
+    },
+    "texels": {
+      "atlas": 2048,
+      "density_px_per_m": {
+        "TireSwing": 1000
+      },
+      "bands_percent": {
+        "<1": 0.2,
+        "1-2": 0.0,
+        "2-4": 1.5,
+        ">=4": 98.3
+      },
+      "thin_faces": 0,
+      "worst": []
+    },
+    "atlasUsedPercent": 52.8
+  },
+  "plan": {
+    "purpose": "tire swing: a tire hung from a side branch by one rope; a child sits in it and swings",
+    "tier": "complex",
+    "category": [
+      "suspended"
+    ],
+    "supports": [
+      "branch"
+    ],
+    "sources": [
+      {
+        "kind": "video",
+        "where": "1:04-1:08 (refs 27, 32)"
+      },
+      {
+        "kind": "text",
+        "where": "real rigging: tire swing guides (Bob Vila, Instructables)"
+      }
+    ],
+    "components": [
+      {
+        "name": "RoundTurn",
+        "role": "functional",
+        "job": "2.5 turns on the bark take the load by friction",
+        "attaches": [
+          "branch"
+        ],
+        "moves": "fixed",
+        "source": "real"
+      },
+      {
+        "name": "BranchHitches",
+        "role": "functional",
+        "job": "two half hitches round the standing part lock the round turn",
+        "attaches": [
+          "RoundTurn"
+        ],
+        "moves": "fixed",
+        "source": "real"
+      },
+      {
+        "name": "BranchTail",
+        "role": "decorative",
+        "job": "the frayed free end after the hitches, hanging",
+        "attaches": [
+          "BranchHitches"
+        ],
+        "moves": "flex",
+        "source": "real"
+      },
+      {
+        "name": "HangingRope",
+        "role": "functional",
+        "job": "carries the tire straight down from the branch's side",
+        "attaches": [
+          "RoundTurn"
+        ],
+        "moves": "flex",
+        "source": "seen"
+      },
+      {
+        "name": "Loop",
+        "role": "functional",
+        "job": "over the front shoulder, under the bead, up the back: holds the tire",
+        "attaches": [
+          "HangingRope",
+          "Tire"
+        ],
+        "moves": "flex",
+        "source": "real"
+      },
+      {
+        "name": "TireHitches",
+        "role": "functional",
+        "job": "two half hitches on top of the tire close the loop (the lump in the video)",
+        "attaches": [
+          "Loop"
+        ],
+        "moves": "fixed",
+        "source": "seen"
+      },
+      {
+        "name": "TireTail",
+        "role": "decorative",
+        "job": "the free end lying on the tire",
+        "attaches": [
+          "TireHitches",
+          "Tire"
+        ],
+        "moves": "flex",
+        "source": "real"
+      },
+      {
+        "name": "Tire",
+        "role": "functional",
+        "job": "the seat, hanging right under the rope",
+        "attaches": [
+          "Loop"
+        ],
+        "moves": "free",
+        "source": "seen"
+      }
+    ]
+  },
+  "located": [
+    "HangingRope",
+    "RoundTurn",
+    "Tire"
+  ],
+  "features": [
+    {
+      "id": "branch_hitch",
+      "tier": "critical",
+      "components": [
+        "RoundTurn",
+        "BranchHitches"
+      ],
+      "expect": "a round turn on the bark locked by two half hitches round the standing part",
+      "measure": "support:branch",
+      "view": "branch",
+      "measured": "pass"
+    },
+    {
+      "id": "load_line",
+      "tier": "critical",
+      "components": [
+        "HangingRope",
+        "Loop",
+        "Tire"
+      ],
+      "expect": "the rope runs straight down from the branch's side and its loop holds the tire right under it",
+      "measure": "route:HangingRope",
+      "view": "side",
+      "measured": "pass"
+    },
+    {
+      "id": "tire_hitches",
+      "tier": "important",
+      "components": [
+        "TireHitches",
+        "TireTail"
+      ],
+      "expect": "two half hitches close the loop on top of the tire",
+      "measure": null,
+      "view": "knot",
+      "measured": null
+    }
+  ],
+  "bevels_mm": {
+    "Rope": null,
+    "Tire": null
+  },
+  "links": {
+    "routes": [
+      {
+        "name": "HangingRope",
+        "points": [
+          {
+            "x": 2.104928,
+            "y": 3.960257,
+            "z": 0.80148
+          },
+          {
+            "x": 2.104928,
+            "y": 1.125799,
+            "z": 0.801301
+          },
+          {
+            "x": 2.104928,
+            "y": 1.105495,
+            "z": 0.777351
+          }
+        ],
+        "free": [
+          0
+        ]
+      }
+    ],
+    "attachments": []
+  },
+  "geometry": "5ee0d20d7bfbb572",
+  "structure": "3093d2048cff669d",
+  "asset": "3e9f806de695ee2f",
+  "style_version": "1.1"
+}

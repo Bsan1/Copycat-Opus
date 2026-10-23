@@ -1,0 +1,346 @@
+{
+  "model": "shed",
+  "generator": "tools/blender/models/shed.py",
+  "blender": "5.2.3 LTS",
+  "objects": [
+    {
+      "name": "Shed",
+      "position": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "boundsMin": {
+        "x": -1.443543,
+        "y": 0.0,
+        "z": -1.44
+      },
+      "boundsMax": {
+        "x": 1.443543,
+        "y": 3.561,
+        "z": 1.44
+      },
+      "triangles": 25720,
+      "vertices": 13782,
+      "closed": true,
+      "foliage": false,
+      "volume": 20.354317677,
+      "materials": [
+        "Siding_849CA4_matte",
+        "Paint_DADCE0_matte",
+        "Shingles_2F352D_matte",
+        "Metal_1D1D20_satin",
+        "Glass_30363A_glossy"
+      ]
+    }
+  ],
+  "anchors": [],
+  "surfaces": [
+    {
+      "name": "Siding_849CA4_matte",
+      "finish": "matte",
+      "note": "Siding: painted wooden lap boards, blue-green-grey (#7B8489 in the video; base shifted to green so the game's purple sky light does not turn it purple); matte, wood grain under the paint"
+    },
+    {
+      "name": "Paint_DADCE0_matte",
+      "finish": "matte",
+      "note": "Corner, rake and fascia boards, casings, sill, door leaves: white painted wood, neutral (in the video the door has the same tone as the casing, not yellow); matte"
+    },
+    {
+      "name": "Shingles_2F352D_matte",
+      "finish": "matte",
+      "note": "Roof: asphalt shingles, charcoal grey (the 0:16 frame reads 76/73/71 on the roof; the game read 75/70/78 with #2E3331, a little lilac, so the base lost blue); matte, granular, mottled"
+    },
+    {
+      "name": "Metal_1D1D20_satin",
+      "finish": "satin",
+      "note": "Hinge, handle, bolt: black painted iron; dark with a little light in the video"
+    },
+    {
+      "name": "Glass_30363A_glossy",
+      "finish": "glossy",
+      "note": "Window glass: dark, a slight reflection"
+    }
+  ],
+  "external": [
+    {
+      "ref": "ambientcg:PaintedWood009C",
+      "part": "(texture)",
+      "name": "Painted Wood 009 C",
+      "licence": "CC0",
+      "authors": [
+        "ambientCG (Lennart Demes)"
+      ],
+      "page": "https://ambientcg.com/view?id=PaintedWood009C",
+      "attributionRequired": false,
+      "file": "PaintedWood009C_1K-JPG_Color.jpg"
+    },
+    {
+      "ref": "ambientcg:PaintedWood008A",
+      "part": "(texture)",
+      "name": "Painted Wood 008 A",
+      "licence": "CC0",
+      "authors": [
+        "ambientCG (Lennart Demes)"
+      ],
+      "page": "https://ambientcg.com/view?id=PaintedWood008A",
+      "attributionRequired": false,
+      "file": "PaintedWood008A_1K-JPG_Color.jpg"
+    },
+    {
+      "ref": "ambientcg:Wood049",
+      "part": "(texture)",
+      "name": "Wood 049",
+      "licence": "CC0",
+      "authors": [
+        "ambientCG (Lennart Demes)"
+      ],
+      "page": "https://ambientcg.com/view?id=Wood049",
+      "attributionRequired": false,
+      "file": "Wood049_1K-JPG_Color.jpg"
+    }
+  ],
+  "qc": {
+    "zFighting": {
+      "pairs": 0,
+      "cm2": 0.0
+    },
+    "construction": {
+      "shells": 461,
+      "components": 1,
+      "stray": [],
+      "routes": 0,
+      "attachments": 0,
+      "supports": 0,
+      "problems": []
+    },
+    "holes": {
+      "cameras": 300,
+      "rays": 450000,
+      "backface_hits": 0,
+      "hole_points": 0,
+      "edge_grazes": 0,
+      "regions": [],
+      "examples": []
+    },
+    "joints": {
+      "members": 122,
+      "ends": 426,
+      "bad": 0,
+      "worst": []
+    }
+  },
+  "tiled": true,
+  "plan": {
+    "purpose": "garden shed: a small timber building with a double door and a side window",
+    "tier": "complex",
+    "category": [
+      "buildings"
+    ],
+    "supports": [
+      "ground"
+    ],
+    "sources": [
+      {
+        "kind": "video",
+        "where": "0:16 (ref 05)"
+      }
+    ],
+    "components": [
+      {
+        "name": "WallCore",
+        "role": "structural",
+        "job": "the frame and sheathing the boards are nailed to",
+        "attaches": [
+          "ground"
+        ],
+        "moves": "fixed",
+        "source": "guess"
+      },
+      {
+        "name": "Siding",
+        "role": "structural",
+        "job": "lap boards, each over the one below; ends under the trim",
+        "attaches": [
+          "WallCore"
+        ],
+        "moves": "fixed",
+        "source": "seen"
+      },
+      {
+        "name": "CornerBoards",
+        "role": "structural",
+        "job": "cover the siding ends at the corners",
+        "attaches": [
+          "WallCore"
+        ],
+        "moves": "fixed",
+        "source": "seen"
+      },
+      {
+        "name": "Casings",
+        "role": "structural",
+        "job": "line the door and window openings, cover the board ends",
+        "attaches": [
+          "WallCore"
+        ],
+        "moves": "fixed",
+        "source": "seen"
+      },
+      {
+        "name": "Sheathing",
+        "role": "structural",
+        "job": "the roof deck on the walls",
+        "attaches": [
+          "WallCore"
+        ],
+        "moves": "fixed",
+        "source": "guess"
+      },
+      {
+        "name": "Shingles",
+        "role": "functional",
+        "job": "shed the rain: two layers everywhere, over the edges",
+        "attaches": [
+          "Sheathing"
+        ],
+        "moves": "fixed",
+        "source": "seen"
+      },
+      {
+        "name": "RidgeCaps",
+        "role": "functional",
+        "job": "close the ridge",
+        "attaches": [
+          "Shingles"
+        ],
+        "moves": "fixed",
+        "source": "seen"
+      },
+      {
+        "name": "RakeBoards",
+        "role": "structural",
+        "job": "trim the gable roof edges",
+        "attaches": [
+          "WallCore",
+          "Sheathing"
+        ],
+        "moves": "fixed",
+        "source": "seen"
+      },
+      {
+        "name": "Fascia",
+        "role": "structural",
+        "job": "trims the eaves",
+        "attaches": [
+          "WallCore",
+          "Sheathing"
+        ],
+        "moves": "fixed",
+        "source": "seen"
+      },
+      {
+        "name": "Hinges",
+        "role": "functional",
+        "job": "black wedge straps the leaves turn on",
+        "attaches": [
+          "Casings"
+        ],
+        "moves": "fixed",
+        "source": "seen"
+      },
+      {
+        "name": "DoorLeaves",
+        "role": "functional",
+        "job": "framed double door: frame, middle rail, two panels",
+        "attaches": [
+          "Hinges"
+        ],
+        "moves": "hinge",
+        "source": "seen"
+      },
+      {
+        "name": "Handles",
+        "role": "functional",
+        "job": "pull the leaves open, bolted to them",
+        "attaches": [
+          "DoorLeaves"
+        ],
+        "moves": "fixed",
+        "source": "seen"
+      },
+      {
+        "name": "Sash",
+        "role": "structural",
+        "job": "window frame holding the 2x2 panes",
+        "attaches": [
+          "Casings"
+        ],
+        "moves": "fixed",
+        "source": "seen"
+      },
+      {
+        "name": "Glass",
+        "role": "functional",
+        "job": "the panes",
+        "attaches": [
+          "Sash"
+        ],
+        "moves": "fixed",
+        "source": "seen"
+      },
+      {
+        "name": "Sill",
+        "role": "functional",
+        "job": "sheds the water under the window",
+        "attaches": [
+          "Casings"
+        ],
+        "moves": "fixed",
+        "source": "seen"
+      }
+    ]
+  },
+  "located": [],
+  "features": [
+    {
+      "id": "doors_hung",
+      "tier": "critical",
+      "components": [
+        "DoorLeaves",
+        "Hinges",
+        "Casings"
+      ],
+      "expect": "each door leaf hangs on its hinges, fixed to the casing, with a handle to pull it",
+      "measure": null,
+      "view": "door",
+      "measured": null
+    },
+    {
+      "id": "roof_sheds_rain",
+      "tier": "important",
+      "components": [
+        "Shingles",
+        "Sheathing",
+        "RakeBoards",
+        "Fascia"
+      ],
+      "expect": "shingles lap in two layers over the sheathing and overhang the rake and the fascia",
+      "measure": null,
+      "view": "eave",
+      "measured": null
+    }
+  ],
+  "bevels_mm": {
+    "Body": 2.0,
+    "Doors": 3.0,
+    "Hardware": null,
+    "Roof": null,
+    "Trim": 4.0,
+    "Window": 2.0
+  },
+  "geometry": "00af2881318639d7",
+  "structure": "518b083fafac487b",
+  "asset": "385110a2ebed07fb",
+  "style_version": "1.1"
+}
