@@ -295,16 +295,18 @@ def text_stats(text, crops=0):
             'excluded': 'image tokens, system instructions, chat history and tool results'}
 
 
-def brief(root, name, cls=None, materials=None, write=True):
+def brief(root, name, cls=None, materials=None, write=True, *, allow_unclassified=False):
     root = Path(root)
     if not re.fullmatch(r'[A-Za-z0-9_-]+', name):
         raise ValueError('Use a simple model name (letters, numbers, underscore, hyphen)')
     style, refs = require_valid(root)
     cls = cls or next((c for c, names in style.get('classes', {}).items() if name in names), None)
-    if cls is None:
-        raise ValueError('Unknown model: specify --class')
-    if cls not in set(style.get('classes', {})) | {'prop'}:
-        raise ValueError(f'Unknown class: {cls}')
+    choices = ', '.join(sorted(set(style.get('classes', {})) | {'prop'}))
+    if cls is None and not allow_unclassified:
+        raise ValueError(f'No style class for {name!r}. Specify --class CLASS (choices: {choices}), '
+                         'or register the model in style.json classes.')
+    if cls is not None and cls not in set(style.get('classes', {})) | {'prop'}:
+        raise ValueError(f'Unknown class: {cls}. Choices: {choices}')
     rules = selected_rules(style, cls, materials)
     scores = {}
     for r in rules:
@@ -314,10 +316,15 @@ def brief(root, name, cls=None, materials=None, write=True):
     chosen = [eligible[rid] for rid in sorted(scores, key=lambda rid: (-scores[rid], rid)) if rid in eligible]
     chosen = chosen[:style['guideline'].get('cost', {}).get('max_reference_images', 3)]
     hashes = {r['id']: rule_signature(r, refs, style) for r in rules}
-    lines = [f'# {name} — {CLASSES.get(cls, cls)}', '',
+    lines = [f'# {name} — {CLASSES.get(cls, cls) if cls else "Sınıfsız: ortak kurallar"}', '',
              f'Stil: {style["name"]} | belge r{style["guideline"]["revision"]} | {style["guideline"]["status"]}',
              style['summary'], '', 'Görsel kurallar taslaksa kullanıcı onayı varsayma. Teknik geçiş görsel stil onayı değildir.',
-             'Tam rehberi yeniden okuma; ihtiyaç olduğunda ilgili kural kimliğinin ayrıntısını aç.', '', '## Uygulanacak kurallar']
+             'Tam rehberi yeniden okuma; ihtiyaç olduğunda ilgili kural kimliğinin ayrıntısını aç.']
+    if cls is None:
+        lines += ['', 'Stil sınıfı belirlenmedi; yalnızca ortak kurallar dahil edildi. Sınıfa özel stil değerlendirmesi eksik. '
+                  f'`py -3 tools/Review.py pack {name} --class CLASS` ile sınıfı seç veya style.json classes kaydını güncelle. '
+                  f'Seçenekler: {choices}.']
+    lines += ['', '## Uygulanacak kurallar']
     for rule in rules:
         lines.append(f'- [{rule["id"]}] {rule["text"]}')
     budget_values = style.get('stylisation', {}).get('budgets_tris', {}).get(cls)
@@ -332,7 +339,7 @@ def brief(root, name, cls=None, materials=None, write=True):
                 if cls in e.get('scope', []) and example_state(root, e) == 'approved']
     if approved:
         lines += ['', 'Onaylı uygulama örneği: ' + approved[0]['image'] + ' (yalnızca gerekirse aç).']
-    else:
+    elif cls is not None:
         lines += ['', 'Bu sınıf için güncel onaylı uygulama örneği yok; mevcut modeller hedef standardı sayılmaz.']
     lines += ['', 'İnceleme: siluet/oran → yüzey ve malzeme → detay yoğunluğu. Bulguyu kural ve görünümle belirt.',
               'Geri bildirim yalnızca ilgili kuralı değiştirir; genel stil değişikliği olarak varsayma.']
@@ -348,6 +355,7 @@ def brief(root, name, cls=None, materials=None, write=True):
     board_path = root / OUTPUT / 'briefs' / (name + '_references.png')
     stats = text_stats(text, len(chosen))
     result = {'text': text, 'path': str(path), 'board': str(board_path) if chosen else None, 'stats': stats,
+              'class': cls, 'scope_status': 'class_scoped' if cls else 'common_only',
               'rules_hash': digest(hashes), 'rule_ids': list(hashes), 'reference_ids': [r['id'] for r in chosen]}
     if write:
         board(root, chosen, board_path)

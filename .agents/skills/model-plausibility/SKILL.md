@@ -81,6 +81,12 @@ A new kind of object gets a new file only when its first model teaches something
 
 **Preview.** `tools/Models.ps1 -Only <m> -Preview` takes seconds. It runs validation, the plan and the construction gate, then writes labelled renders and the plan card to `Builds/Models/<m>_preview.png`, with no baking, no other gates and no export. Use it once the main bodies and joints exist, before detailing.
 
+**Block-out decision** (every tier, after the first preview): one decision per round, logged in `tools/blender/decisions/<m>.jsonl`:
+`py -3 tools/Review.py decide <m> approve|revise|escalate --stage blockout --note "<view>: <what>"`.
+- `revise` and `escalate` need a located note: a rendered view or a pack image, and what is wrong there. "Make it better" is refused.
+- After 3 revisions at one stage only `approve` or `escalate` is accepted: the user decides, and `Review.py state` shows the model as waiting until a later decision.
+- The final stage ends the same way (`--stage final`) after the review and the look-dev lineup.
+
 **Reference comparison** (when a frame exists; before packing): `py -3 tools/Compare.py <m>`.
 - It reads landmarks from `tools/blender/references/<m>.json`: points picked on the frame, each with its model point; `vfov_deg` fixes a known game camera.
 - It solves the camera and reports the alignment: aligned ≤ 1.5 % of the object's height, rough ≤ 4 %, otherwise poor.

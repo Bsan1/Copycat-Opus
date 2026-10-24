@@ -86,7 +86,7 @@ class RecordTests(Project):
                  "reference_ids": ["mower-reference"], "stats": {"estimated_text_tokens": 20}}
         with mock.patch.object(StyleGuide, "brief", return_value=guide) as brief:
             first = R.pack("m", "final")
-            brief.assert_called_once_with(self.root, "m")
+            brief.assert_called_once_with(self.root, "m", cls=None, allow_unclassified=True)
             self.assertIn("style_references.png", first["files"])
             self.assertNotIn("heroes.png", first["files"])
             self.assertNotIn("near_misses.png", first["files"])

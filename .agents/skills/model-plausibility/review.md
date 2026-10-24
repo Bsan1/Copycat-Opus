@@ -6,6 +6,7 @@ You are reviewing a procedurally generated 3D model for **functional and structu
 
 - `sheet.png`: labelled renders from several angles, the material card, the **plan card** (every component: role, how it moves, seen or guessed, its job, what it is attached to) and, when available, reference crops.
 - `brief.md`: purpose, sources, the plan table, declared links, the measured gate numbers, the generator's notes on the source, and the guidance for this object's category.
+- `view_*.png`: the views of the critical and important features at full size, listed in the brief under "Close-ups". Judge those features on them: the sheet is shrunk to fit and small members vanish there.
 
 - `style_references.png`: optional numbered crops selected for this asset; source IDs and limitations are in the brief.
 
@@ -23,7 +24,8 @@ Check each of these against the renders:
 - **Construction:** is it built the way such things are really built? Look at the joinery, the knots, the fasteners, the order of the layers.
 - **Use:** is what the hands hold where hands reach, and sized for them?
 - **Source:** do the shapes contradict the generator's notes or the reference crops? Is a guessed part implausible?
-- **Art style:** use the scoped rules and evidence in the brief only. Draft rules are advisory. A finding starts with `style:` and gives the rule ID and `location` (`<pack image>: <where>`).
+- **Art style:** use only the scoped rules and selected evidence in the brief. State the rule ID and the specific contradiction. Draft rules remain advisory.
+  - Report a mismatch as a finding whose problem starts with "style:" and give its `location`: the pack image and where in it (`view_front.png: the roof edge`). A style finding without a location is refused.
 - **Pretend functions:** is there a detail that suggests a function the object cannot have (a cable going nowhere, a button on a part nobody can reach), or geometry that contradicts another part?
 
 ## Do not
@@ -48,6 +50,7 @@ Write a JSON file. List at most 8 findings, most severe first. Copy the pack id 
    "component": "the plan's component name (or the closest part)",
    "problem": "what is wrong, in one sentence",
    "evidence": "which view or plan line shows it",
+   "location": "only for a style: finding: <pack image>: <where in it>",
    "fix": "a concrete correction"}
  ],
  "features": [

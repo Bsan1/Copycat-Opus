@@ -1,5 +1,6 @@
 """Reference provenance, bounded context and incremental updates, without Blender/Unity."""
 import copy
+import io
 import json
 from pathlib import Path
 import sys
@@ -98,6 +99,79 @@ class GuideTests(unittest.TestCase):
         self.save()
         with self.assertRaisesRegex(ValueError, 'budget'):
             G.brief(self.root, 'mower')
+
+    def review_inputs(self, name):
+        G.write_json(self.root / 'Assets/Opus/ModelSpecs' / (name + '.json'),
+                     {'model': name, 'structure': 's1', 'features': []})
+        sheet = self.root / 'Builds/Models' / (name + '_contact.png')
+        sheet.parent.mkdir(parents=True, exist_ok=True)
+        Image.new('RGB', (32, 32), '#648255').save(sheet)
+
+    def test_unregistered_review_uses_common_rules_and_explicit_class_enables_scoped_review(self):
+        import Review as R
+        self.review_inputs('new_shed')
+        with patch.object(R, 'ROOT', str(self.root)), patch('sys.stdout', io.StringIO()):
+            common = R.pack('new_shed', 'final')
+            brief_path = self.root / 'Builds/Review/new_shed/brief.md'
+            text = brief_path.read_text(encoding='utf-8')
+            self.assertEqual(common['style_context']['scope_status'], 'common_only')
+            self.assertIsNone(common['style_context']['class'])
+            self.assertEqual(common['style_context']['reference_ids'], ['r_shape'])
+            self.assertIn('shape.read', text)
+            self.assertNotIn('material.wood', text)
+            self.assertIn('--class CLASS', text)
+            # Exercise the CLI as well as real brief generation: no mocked StyleGuide boundary.
+            with patch('sys.argv', ['Review.py', 'pack', 'new_shed', '--class', 'building']):
+                R.main()
+            scoped = G.read(self.root / 'Builds/Review/new_shed/manifest.json')
+            self.assertEqual(scoped['style_context']['scope_status'], 'class_scoped')
+            self.assertEqual(scoped['style_context']['class'], 'building')
+            self.assertIn('r_wood', scoped['style_context']['reference_ids'])
+            self.assertIn('material.wood', brief_path.read_text(encoding='utf-8'))
+            self.assertNotEqual(common['pack'], scoped['pack'])
+            self.assertEqual(G.read(self.root / G.STYLE_PATH), self.style)
+            # Registration infers exactly the same scope as the explicit flag.
+            self.style['classes']['building'].append('new_shed')
+            self.save()
+            self.assertEqual(R.pack('new_shed', 'final')['pack'], scoped['pack'])
+
+    def test_invalid_style_still_fails_and_preserves_existing_review_pack(self):
+        import Review as R
+        self.review_inputs('calibration')
+        with patch.object(R, 'ROOT', str(self.root)), patch('sys.stdout', io.StringIO()):
+            R.pack('calibration', 'final')
+            folder = self.root / 'Builds/Review/calibration'
+            original = {p.name: p.read_bytes() for p in folder.iterdir()}
+            with self.assertRaisesRegex(ValueError, 'Unknown class'):
+                R.pack('calibration', 'final', cls='buidling')
+            Image.new('RGB', (100, 80), '#dd2211').save(self.root / 'refs/source.png')
+            error = io.StringIO()
+            with patch('sys.argv', ['Review.py', 'pack', 'calibration']), patch('sys.stderr', error):
+                with self.assertRaises(SystemExit) as raised:
+                    R.main()
+            self.assertEqual(raised.exception.code, 1)
+            self.assertIn('source changed', error.getvalue())
+            self.assertNotIn('Traceback', error.getvalue())
+            self.assertEqual({p.name: p.read_bytes() for p in folder.iterdir()}, original)
+
+    def test_style_brief_cli_reports_class_choices_and_accepts_new_model_with_class(self):
+        import Style as S
+        with patch.object(S, 'ROOT', str(self.root)), patch.object(S, 'STYLE', str(self.root / G.STYLE_PATH)):
+            for args in ([], ['--class', 'buidling']):
+                with self.subTest(args=args):
+                    error = io.StringIO()
+                    with patch('sys.argv', ['Style.py', 'brief', 'new_shed', *args]), patch('sys.stderr', error):
+                        with self.assertRaises(SystemExit) as raised:
+                            S.main()
+                    self.assertEqual(raised.exception.code, 1)
+                    self.assertIn('building', error.getvalue())
+                    self.assertNotIn('Traceback', error.getvalue())
+            with patch('sys.argv', ['Style.py', 'brief', 'new_shed', '--class', 'building']), \
+                    patch('sys.stdout', io.StringIO()):
+                S.main()
+            result = G.read(self.root / 'Builds/Style/briefs/new_shed.json')
+            self.assertEqual(result['class'], 'building')
+            self.assertIn('material.wood', result['rule_ids'])
 
     def test_build_has_no_process_calls_and_unchanged_outputs_keep_mtimes(self):
         with patch('subprocess.Popen', side_effect=AssertionError('No renderer, engine or model call')):

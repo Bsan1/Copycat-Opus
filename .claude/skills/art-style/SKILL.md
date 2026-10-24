@@ -33,4 +33,6 @@ A documentation revision does not require mesh rebuilding, new pilots, a fresh i
 
 `Review.py pack` adds the asset's selected brief and at most one board, not the whole guide. A style finding names the rule, evidence and location in a pack image; do not restate decided findings without new evidence. `Style.py report` reports technical rules and ordinary asset review state separately from visual style.
 
+For an unregistered model, use `Review.py pack NAME --class CLASS`. Without a known class, review still runs with common rules and marks class-specific style assessment incomplete; choose the class before claiming that assessment is complete.
+
 Printed token counts are estimates for selected text. They exclude image processing, system context, chat history and tool output. Local generation saves repeated context; it does not make reading images or text cost-free. Regenerate documents locally and inspect changed sections; avoid repeated full audits for editorial changes.

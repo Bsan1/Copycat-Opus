@@ -4,10 +4,12 @@ review never runs inside a build: the numeric gates stay deterministic, an AI ju
 dismiss (never as proof), and only the user approves.
 
 Usage:
-  py -3 tools/Review.py pack MODEL [--stage preview|final]
+  py -3 tools/Review.py pack MODEL [--stage preview|final] [--class CLASS]
       Builds/Review/<model>/: sheet.png (labelled views, material and plan cards), brief.md (purpose, sources, plan, critical
       features, links, gate numbers, the generator's notes, the category guidance, any reference comparison) and
       manifest.json (the pack's id, the model's structure hash, the files' hashes: what exactly is being reviewed).
+      The style class is inferred for registered models; --class selects it for new models. Without a known class,
+      the pack includes only common style rules and marks class-specific style assessment as incomplete.
   py -3 tools/Review.py record MODEL FINDINGS.json --reviewer NAME
       Refuses findings that do not name this pack's id or a pack whose files changed after it was made; then writes
       tools/blender/reviews/<model>.json, tied to the structure that was reviewed.
@@ -144,12 +146,19 @@ def generator_notes(model):
         return ast.get_docstring(ast.parse(f.read())) or ""
 
 
-def pack(model, stage):
+def pack(model, stage, cls=None):
     p = paths()
     spec = load_spec(model, stage)
     sheet = os.path.join(p["renders"], model + ("_preview.png" if stage == "preview" else "_contact.png"))
     if not os.path.exists(sheet):
         sys.exit(f"no sheet: {os.path.relpath(sheet, ROOT)}")
+    # Validate style context before replacing an existing pack. Missing classification is allowed;
+    # invalid references, unsupported classes and over-budget guidance must still fail visibly.
+    style = read_json(p["style"])
+    guide = None
+    if style and style.get("schema", 2) >= 3:
+        import StyleGuide
+        guide = StyleGuide.brief(ROOT, model, cls=cls, allow_unclassified=True)
     out = os.path.join(p["packs"], model)
     os.makedirs(out, exist_ok=True)
     for old in glob.glob(os.path.join(out, "*")):
@@ -176,11 +185,7 @@ def pack(model, stage):
     for name in closeups:
         shutil.copyfile(os.path.join(folder, name[5:]), os.path.join(out, name))
         files.append(name)
-    style = read_json(p["style"])
-    guide = None
-    if style and style.get("schema", 2) >= 3:
-        import StyleGuide
-        guide = StyleGuide.brief(ROOT, model)
+    if guide:
         board = guide.get("board")
         if board and os.path.exists(board):
             shutil.copyfile(board, os.path.join(out, "style_references.png"))
@@ -305,10 +310,14 @@ def pack(model, stage):
                 "features": [f["id"] for f in features]}
     if guide:
         manifest["style_context"] = {"rules_hash": guide.get("rules_hash"),
+                                     "class": guide.get("class"), "scope_status": guide.get("scope_status"),
                                      "reference_ids": guide.get("reference_ids", []), "stats": guide.get("stats", {})}
     write_json(os.path.join(out, "manifest.json"), manifest)
     print(f"pack {pack_id}: {os.path.relpath(out, ROOT)} ({', '.join(files)}); reviewer instructions: "
           f".claude/skills/model-plausibility/review.md")
+    if guide and guide.get("scope_status") == "common_only":
+        print(f"Style: common rules only; class-specific assessment incomplete. "
+              f"Use pack {model} --class CLASS or register its class in style.json.")
     return manifest
 
 
@@ -630,9 +639,15 @@ def main():
     parser.add_argument("--by", default="")
     parser.add_argument("--note", default="")
     parser.add_argument("--json", action="store_true")
+    parser.add_argument("--class", dest="cls", help="style class for a new/unregistered model (pack only)")
     a = parser.parse_args()
     if a.action == "pack":
-        pack(a.args[0], "preview" if a.stage == "blockout" else a.stage)
+        if len(a.args) != 1:
+            parser.error("pack MODEL [--stage preview|final] [--class CLASS]")
+        try:
+            pack(a.args[0], "preview" if a.stage == "blockout" else a.stage, cls=a.cls)
+        except (ValueError, OSError) as exc:
+            parser.exit(1, f"Review pack: {exc}\n")
     elif a.action == "decide":
         if len(a.args) != 2:
             sys.exit(f"decide MODEL {'|'.join(DECISIONS)} --stage blockout|final --note \"<view>: <what>\"")

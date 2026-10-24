@@ -716,7 +716,10 @@ def main():
     if a.action == "brief":
         if not a.args:
             sys.exit("brief NAME --class CLASS")
-        brief(a.args[0], a.cls)
+        try:
+            brief(a.args[0], a.cls)
+        except (ValueError, OSError) as exc:
+            parser.exit(1, f"Style brief: {exc}\n")
         return
     if a.action == "extract":
         extract(a.args)
