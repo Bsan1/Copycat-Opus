@@ -1,4 +1,4 @@
-"""Reference provenance, bounded context and incremental updates, without Blender/Unity."""
+"""Reference provenance, complete scoped guidance and incremental updates, without Blender/Unity."""
 import copy
 import io
 import json
@@ -75,13 +75,15 @@ class GuideTests(unittest.TestCase):
         self.refs['references'][0]['path'] = '../outside.png'
         self.assertIn('Path must stay', ';'.join(G.validate_data(self.style, self.refs, self.root)))
 
-    def test_brief_selects_class_rules_and_bounded_images(self):
+    def test_brief_selects_class_rules_with_readable_boards_and_full_crops(self):
         result = G.brief(self.root, 'mower')
         self.assertEqual(result['rule_ids'], ['shape.read'])
         self.assertEqual(result['reference_ids'], ['r_shape'])
-        self.assertEqual(result['stats']['image_count'], 1)
+        self.assertEqual(result['stats']['board_count'], 1)
+        self.assertEqual(result['stats']['detail_images'], 1)
         self.assertNotIn('material.wood', result['text'])
-        self.assertLessEqual(len(result['text']), 7000)
+        self.assertIn(self.style['rules'][0]['instructions'][0], result['text'])
+        self.assertIn(self.style['rules'][0]['avoid'][0], result['text'])
         self.assertTrue(Path(result['board']).exists())
         self.assertEqual(G.brief(self.root, 'house')['rule_ids'], ['shape.read', 'material.wood'])
 
@@ -91,14 +93,53 @@ class GuideTests(unittest.TestCase):
         self.assertEqual(G.brief(self.root, 'house', materials=['Metal'])['rule_ids'], ['shape.read'])
         self.assertEqual(len(G.brief(self.root, 'house', materials=['Wood'])['rule_ids']), 2)
 
-    def test_unknown_model_requires_class_and_excess_context_fails_explicitly(self):
+    def test_unknown_model_requires_class_and_long_guidance_is_not_cut(self):
         with self.assertRaises(ValueError):
             G.brief(self.root, 'new_pump')
         self.assertEqual(G.brief(self.root, 'new_pump', 'machine')['rule_ids'], ['shape.read'])
         self.style['rules'][0]['text'] = 'x' * 7200
         self.save()
-        with self.assertRaisesRegex(ValueError, 'budget'):
-            G.brief(self.root, 'mower')
+        self.assertIn('x' * 7200, G.brief(self.root, 'mower')['text'])
+
+    def test_all_relevant_references_reach_review_at_full_resolution(self):
+        import Review as R
+        for i in range(6):
+            ref = dict(self.refs['references'][0], id=f'extra_{i}')
+            self.refs['references'].append(ref)
+            self.style['rules'][0]['evidence'].append({'reference': ref['id'], 'aspect': 'shape'})
+        self.save()
+        self.review_inputs('mower')
+        guide = G.brief(self.root, 'mower')
+        self.assertEqual(len(guide['reference_ids']), 7)  # old configured limit is deliberately still 2
+        self.assertEqual(len(guide['boards']), 3)
+        self.assertEqual(len(guide['reference_images']), 7)
+        with Image.open(guide['reference_images'][0]['path']) as crop:
+            self.assertEqual(crop.size, (90, 70))
+            self.assertEqual(crop.getpixel((0, 0)), (100, 130, 85))
+        with patch.object(R, 'ROOT', str(self.root)), patch('sys.stdout', io.StringIO()):
+            manifest = R.pack('mower', 'final')
+        self.assertEqual(len(manifest['style_context']['reference_images']), 7)
+        self.assertEqual(len(manifest['style_context']['reference_boards']), 3)
+        for item in manifest['style_context']['reference_images']:
+            self.assertTrue((self.root / 'Builds/Review/mower' / item['file']).is_file())
+
+    def test_material_choices_and_colour_targets_are_in_brief_and_change_impact(self):
+        self.style['finish_by_kind'] = {'Rubber': ['matte'], 'Metal': ['satin', 'metallic']}
+        self.style['colour_roles'] = [{'id': 'body', 'scope': ['machine'], 'materials': ['Metal'],
+                                      'palette': ['#B03030'], 'tolerance_delta_e': 20, 'status': 'draft',
+                                      'rationale': 'Authored starting target', 'rule': 'colour.role_palette'}]
+        role_rule = copy.deepcopy(self.style['rules'][0])
+        role_rule.update(id='colour.role_palette', origin='technical', decision='Authored target', evidence=[])
+        self.style['rules'].append(role_rule)
+        self.save()
+        text = G.brief(self.root, 'mower')['text']
+        self.assertIn('| Rubber | matte |', text)
+        self.assertIn('| Metal | satin, metallic |', text)
+        self.assertIn('#B03030', text)
+        self.assertNotIn('#B03030', G.brief(self.root, 'new_asset', allow_unclassified=True)['text'])
+        before = G.snapshot_data(self.style, self.refs)
+        self.style['colour_roles'][0]['palette'] = ['#404080']
+        self.assertIn('colour.role_palette', G.impact_data(before, G.snapshot_data(self.style, self.refs))['changed_rules'])
 
     def review_inputs(self, name):
         G.write_json(self.root / 'Assets/Opus/ModelSpecs' / (name + '.json'),
@@ -208,9 +249,18 @@ class GuideTests(unittest.TestCase):
         current, _ = G.load(self.root)
         self.assertEqual(current['rules'][0], before_shape)
         self.assertEqual(current['rules'][1]['origin'], 'user_decision')
-        self.assertIn('previous_guidance', current['rules'][1])
-        self.assertEqual(current['rules'][1]['evidence'], [])
-        self.assertEqual(current['rules'][1]['previous_guidance']['evidence'][0]['reference'], 'r_wood')
+        self.assertEqual(current['rules'][1]['instructions'], self.style['rules'][1]['instructions'])
+        self.assertEqual(current['rules'][1]['avoid'], self.style['rules'][1]['avoid'])
+        self.assertEqual(current['rules'][1]['evidence'][0]['reference'], 'r_wood')
+        self.assertEqual(current['rules'][1]['evidence'][0]['status'], 'needs_review')
+        self.assertEqual(current['rules'][1]['guidance_review']['status'], 'needs_review')
+        self.assertEqual(current['guideline']['history'][-1]['before_rule'], self.style['rules'][1])
+        output = G.build(self.root)
+        for path in (output['files']['guide'], output['files']['report'], self.root / 'Builds/Style/briefs/house.md'):
+            text = Path(path).read_text(encoding='utf-8')
+            self.assertIn('Son kullanıcı kararı önceliklidir', text)
+            self.assertIn(self.style['rules'][1]['instructions'][0], text)
+            self.assertIn('yeni kararı desteklediği henüz doğrulanmadı', text)
         self.assertEqual(current['style_version'], '1.1')
         self.assertEqual(source_hash, G.file_hash(self.root / G.REF_PATH))
 

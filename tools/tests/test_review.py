@@ -149,23 +149,6 @@ class StyleFindingTests(Project):
         with self.assertRaises(SystemExit):   # a location that is not in the pack
             R.record("m", self.findings(manifest, [dict(self.FINDING, location="view_top.png: the lid")]), "test")
 
-    def test_the_pack_carries_the_heroes_and_the_near_misses(self):
-        # 24 October 2026: the hero's view was looked up under the wrong key of views.json and heroes.png never appeared
-        hero = os.path.join(self.root, "Builds", "Models", "h")
-        os.makedirs(hero)
-        R.write_json(os.path.join(hero, "views.json"), {"views": [{"type": "render", "file": "front.png"}]})
-        Image.new("RGB", (40, 30), (90, 120, 80)).save(os.path.join(hero, "front.png"))
-        lookdev = os.path.join(self.root, "Builds", "Style", "lookdev")
-        os.makedirs(lookdev)
-        for name in ("style", "glossy_plastic"):
-            Image.new("RGB", (40, 30), (120, 90, 80)).save(os.path.join(lookdev, f"near_h_{name}.png"))
-        R.write_json(os.path.join(self.root, "tools", "blender", "style", "style.json"),
-                     {"heroes": ["h", "m"], "lookdev": {"near_miss_models": ["h"]},
-                      "near_misses": [{"variant": "glossy_plastic", "rule": "surfaces.painted"}]})
-        manifest = R.pack("m", "final")
-        self.assertIn("heroes.png", manifest["files"])
-        self.assertIn("near_misses.png", manifest["files"])
-
     def test_a_located_style_finding_is_recorded(self):
         manifest = R.pack("m", "final")
         review = R.record("m", self.findings(manifest, [dict(self.FINDING, location="sheet.png: the base, front view")]), "test")

@@ -12,12 +12,6 @@
       "prop": 0.01,
       "building": 0.02
     },
-    "chamfer_mm": {
-      "hard_parts": [
-        1.0,
-        2.5
-      ]
-    },
     "budgets_tris": {
       "held_tool": [
         5000,
@@ -44,10 +38,13 @@
         80000
       ]
     },
-    "chamfer_applies_to": [
-      "held_tool",
-      "machine"
-    ]
+    "bevel_policy": {
+      "require_on_classes": [
+        "machine",
+        "held_tool"
+      ],
+      "require_positive_width": true
+    }
   },
   "classes": {
     "held_tool": [
@@ -349,9 +346,9 @@
     {
       "id": "colour.role_palette",
       "title": "Rengi kullanım yerine göre dağıt",
-      "text": "Aletlerde belirgin renk vurgusu, binalarda daha sakin yüzeyler görülüyor.",
+      "text": "Aletlerde ana gövde rengini koyu tutamak ve mekanik parçalardan ayır; binalarda sakin kaplama ile açık çerçeveyi ayrıştır.",
       "kind": "tunable",
-      "check": "review: ilgili kaynak crop ve model görünüşünü yan yana incele",
+      "check": "Style.py report: rol bazlı malzeme rengi önerileri ve ölçüm kapsamı; kaynak dokuları/oyun görünümü için görsel review",
       "enforce": "warn",
       "aspect": "colour",
       "scope": [
@@ -374,8 +371,9 @@
       ],
       "rationale": "Farklı nesnelerin renkleri aynı olabilir diye değil, rollerine göre ele alınıyor.",
       "instructions": [
-        "Ana yüzey, küçük vurgu ve koyu işlev parçası için ayrı renk rolleri belirle.",
-        "Yeni nesnenin rengini işlev ve malzemesine göre seç; tüm görüntüleri tek palete ortalama."
+        "Biçme makinesi ve trimmer gövdesinde kırmızı vurguyu; hortum başlığında yeşil gövde, sarı parçalar ve koyu tutuş detaylarını koru.",
+        "Ev ve kulübede kaplama rengini çerçeve kadar parlak veya doygun yapma; çerçeve açıklığıyla kütleleri ayır.",
+        "Brief içindeki rol bazlı başlangıç renklerini kullan. Sayısal eşleşmesi olmayan kaynak dokuları aynı renk rolü ve kontrast dağılımı açısından görsel olarak kontrol et."
       ],
       "avoid": [
         "Kırmızı makinenin doygunluğunu bütün binalara taşımak."
@@ -386,7 +384,7 @@
     {
       "id": "colour.clean_frames",
       "title": "Ekran rengini taban renkle karıştırma",
-      "text": "Kaynak pikseli ışık, sis ve çevre etkisini de içerir.",
+      "text": "Malzeme rengini seçerken referanstaki yönlü ışığı, sisi ve gölgeyi dokuya kopyalama.",
       "kind": "tunable",
       "check": "review: ilgili kaynak crop ve model görünüşünü yan yana incele",
       "enforce": "warn",
@@ -409,8 +407,8 @@
       ],
       "rationale": "Bu görsellerden malzemenin ışıksız rengi tek başına belirlenemez.",
       "instructions": [
-        "Görüntüde görülen rengi örnek göster; doğrudan albedo sınırı ilan etme.",
-        "Üretim rengini nötr kontrol ve oyun görünüşüyle birlikte değerlendir."
+        "Ana renk ailesini gölgeli ve aydınlık bölgelerde birlikte değerlendir; tek bir parlak pikseli tüm yüzeyin taban rengi yapma.",
+        "Renk doğrulamasında mevcut nötr malzeme görünümü ile oyun içindeki görünümü ayır. Işığın neden olduğu farkı taban renge kalıcı gölge boyayarak düzeltme."
       ],
       "avoid": [
         "Görüntüden ışık tamamen çıkarılmış gibi kesin renk kodları yazmak."
@@ -565,10 +563,10 @@
     },
     {
       "id": "edges.chamfer",
-      "title": "Eski pah aralığı: geçici teknik tercih",
-      "text": "Mevcut 1–2,5 mm aralığı otomatik stil kanıtı değildir.",
+      "title": "Parçaya göre kenar yumuşaklığı",
+      "text": "Pah genişliğini parça ölçeğine ve referanstaki kenar geçişine göre seç; panel aralıklarını, ince uçları ve birleşimleri koru.",
       "kind": "tunable",
-      "check": "Style.py report (bevels_mm; warning) + review",
+      "check": "Style.py report: açık politikadaki eksik/geçersiz pah; görünüm ve ölçek için görsel review",
       "enforce": "warn",
       "aspect": "edges",
       "scope": [
@@ -578,9 +576,11 @@
       "origin": "technical",
       "evidence": [],
       "decision": "Önceki Copycat Opus üretim hattından devralınan teknik tercih; görsellerden ölçülmedi ve bu kılavuz için kullanıcı onayı varsayılmadı.",
-      "rationale": "Stil gözlemi değil; mevcut üretimle uyumluluk için görünür tutulan geçici tercih.",
+      "rationale": "Eski 1–2,5 mm aralığının bu oyunun bütün parçalarına uygulanmasını destekleyen ölçüm yok. Kenar genişliği görsel ve işlevsel bağlamla seçilir.",
       "instructions": [
-        "Aralık dışı sonucu uyarı olarak incele; referansta aynı pah ölçüldü diye sunma."
+        "Tek bir milimetre aralığını bütün parçalara uygulama. Küçük başlıkta dar, geniş plastik kapakta daha geniş geçiş kullanabilirsin.",
+        "Kenarda okunur bir ışık geçişi oluştur; pah komşu yüzeyi yutuyorsa, panel ayrımını siliyorsa veya silueti değiştiriyorsa küçült.",
+        "Keskin kalması gereken parçalarda no_chamfer gerekçesini kaydet. Sayısal kontrol yalnızca eksik, sıfır, negatif veya sonlu olmayan genişliği işaretler."
       ],
       "avoid": [],
       "confidence": "medium",
@@ -588,8 +588,8 @@
     },
     {
       "id": "finish.real_material",
-      "title": "Eski yüzey tablosu: geçici teknik tercih",
-      "text": "finish_by_kind tablosu mevcut üretim varsayımlarını kaydeder.",
+      "title": "Malzemeye uygun yüzey bitişi",
+      "text": "Kauçuk, taş, beton ve kabuğu mat tut; metal ve boyalı parçalarda referanstaki yansımaya göre saten, parlak veya metalik bitiş seç.",
       "kind": "tunable",
       "check": "Style.py report (finish_by_kind; warning)",
       "enforce": "warn",
@@ -600,9 +600,11 @@
       "origin": "technical",
       "evidence": [],
       "decision": "Önceki Copycat Opus üretim hattından devralınan teknik tercih; görsellerden ölçülmedi ve bu kılavuz için kullanıcı onayı varsayılmadı.",
-      "rationale": "Stil gözlemi değil; mevcut üretimle uyumluluk için görünür tutulan geçici tercih.",
+      "rationale": "Malzeme ayrımı nesnenin okunurluğunu sağlar. Tablo teknik başlangıçtır; nesneye özel görsel gözlem daha dar bir seçim tanımlayabilir.",
       "instructions": [
-        "Malzeme tablosu ile görünen sonuç çelişirse farkı kaydet; tabloyu otomatik görsel doğruluk sayma."
+        "Brief içindeki yüzey bitişi tablosunu uygula. Tablodaki seçeneklerin hepsini aynı nesnede kullanmak zorunda değilsin.",
+        "Kauçuk tutamak ve lastik üzerinde ayna gibi yansıma kullanma. Boyalı gövde ile çıplak metali aynı malzeme olarak ele alma.",
+        "Hortum başlığının yeşil ve sarı plastiklerini mevcut referansa göre mat tut; biçme makinesinin boyalı kırmızı kabuğunda kenar boyunca daha belirgin yansıma korunabilir."
       ],
       "avoid": [],
       "confidence": "medium",
@@ -610,8 +612,8 @@
     },
     {
       "id": "detail.floor",
-      "title": "Eski detay tabanı: kamera ile denetle",
-      "text": "Sınıf tabanları elde taşınan alette 3 mm, prop için 10 mm, binada 20 mm olarak devralındı.",
+      "title": "Ayrıntıyı görünürlüğüne göre üret",
+      "text": "Küçük ayrıntıyı oyun kamerasındaki okunurluğuna ve işlevine göre geometri, doku veya sadeleştirme ile çöz.",
       "kind": "tunable",
       "check": "review",
       "enforce": "warn",
@@ -624,7 +626,9 @@
       "decision": "Önceki Copycat Opus üretim hattından devralınan teknik tercih; görsellerden ölçülmedi ve bu kılavuz için kullanıcı onayı varsayılmadı.",
       "rationale": "Stil gözlemi değil; mevcut üretimle uyumluluk için görünür tutulan geçici tercih.",
       "instructions": [
-        "Diğer sınıflara fallback uygulandığını açıkla; ekran boyutuna bakmadan küçük ayrıntıyı zorunlu yasak yapma."
+        "Silueti, bağlantıyı veya mekanizmayı açıklayan küçük parçayı boyutu küçük diye kaldırma.",
+        "Yüzey izi ve sığ doku ayrıntısını geometriye çevirmeden önce mevcut yakın ve oyun mesafesi görüntülerini karşılaştır.",
+        "Sınıfa ait eski milimetre tabanlarını otomatik kesme sınırı olarak kullanma; görünürlük ve işlev kararını planında belirt."
       ],
       "avoid": [],
       "confidence": "medium",
@@ -632,8 +636,8 @@
     },
     {
       "id": "detail.budgets",
-      "title": "Üçgen bütçesi görsel stil değildir",
-      "text": "stylisation.budgets_tris mevcut teknik bütçeleri saklar.",
+      "title": "İşlevi ve silueti koruyan geometri bütçesi",
+      "text": "Silueti ve işlevsel parçaları koruyarak sınıfın üçgen bütçesine yaklaş; tekrarlı ve görünmeyen geometriyi önce sadeleştir.",
       "kind": "tunable",
       "check": "Style.py report (stylisation.budgets_tris; warning)",
       "enforce": "warn",
@@ -646,7 +650,8 @@
       "decision": "Önceki Copycat Opus üretim hattından devralınan teknik tercih; görsellerden ölçülmedi ve bu kılavuz için kullanıcı onayı varsayılmadı.",
       "rationale": "Stil gözlemi değil; mevcut üretimle uyumluluk için görünür tutulan geçici tercih.",
       "instructions": [
-        "Üst sınırı aşan modeli maliyetiyle değerlendir; sırf bütçeden geçmesi stile uyduğu anlamına gelmez."
+        "Brief içinde verilen üst bütçeyi aşarsan hangi görünür özelliğin maliyeti artırdığını belirt.",
+        "Alt değere ulaşmak için poligon ekleme. Küçük parçaları sırf bütçe tutturmak için işlevsiz hâle getirme."
       ],
       "avoid": [],
       "confidence": "medium",
@@ -2133,6 +2138,18 @@
           "change": "checks, no change to the look: finish by kind, class budgets and chamfers in Style.py report (budgets and chamfers report only until the user decides on the assets they flag); game shots against their reference frames (Style.py shots, report only); near misses in the review"
         }
       ]
+    },
+    "superseded_chamfer_policy": {
+      "chamfer_mm": {
+        "hard_parts": [
+          1.0,
+          2.5
+        ]
+      },
+      "chamfer_applies_to": [
+        "held_tool",
+        "machine"
+      ]
     }
   },
   "technical_provenance": {
@@ -2146,7 +2163,7 @@
     "note": "Sınıflar ve sayısal üretim tercihleri eski hatla uyumluluk için korundu; kaynak görüntülerden ölçülmedi. Stil kabulü olarak kullanılamaz."
   },
   "guideline": {
-    "revision": 1,
+    "revision": 2,
     "status": "draft",
     "overview": [
       "Bu taslak, mevcut trailer içinden seçilen yedi görüntünün dokuz crop’una dayanır. Farklı oyunlardan yeni referans eklenebilir; her görsel yalnızca kendisine atanmış özellikler için kanıt olur.",
@@ -2160,8 +2177,8 @@
       "Üçgen bütçesi, pah milimetresi ve detay tabanı önceki hattın teknik tercihleri; görsel gözlem veya kullanıcı onayı değil."
     ],
     "cost": {
-      "max_reference_images": 3,
-      "max_brief_chars": 7000
+      "strategy": "İlgili içeriği eksiksiz aktar; aynı kaynağı önbellekten kullan ve değişmeyen analizi tekrarlama.",
+      "preserve_required_content": true
     },
     "examples": [
       {
@@ -2208,7 +2225,138 @@
       {
         "date": "2026-10-24",
         "reason": "Mevcut referanslar tek kez görsel olarak incelendi; kaynaklı Türkçe taslak, sınıfa göre brief ve onaysız başlangıç örnekleri için schema 3 hazırlandı. Otomatik stil/albedo çıkarımı yapılmadı."
+      },
+      {
+        "date": "2026-10-24",
+        "reason": "Üretim talimatları ve yüzey/renk tabloları brief içine alındı; içerik kesen bütçe sınırları ve genel pah aralığı kaldırıldı. Renk hedefleri AI yorumu olarak taslak; çok oyunlu doğrulama sonraya bırakıldı."
       }
     ]
-  }
+  },
+  "colour_roles": [
+    {
+      "id": "dark_rubber",
+      "scope": [
+        "machine",
+        "held_tool",
+        "suspended"
+      ],
+      "materials": [
+        "Rubber"
+      ],
+      "palette": [
+        "#202226",
+        "#383A40"
+      ],
+      "tolerance_delta_e": 20,
+      "rationale": "Koyu, düşük doygunluklu tutamak ve lastik rolü için seçilmiş taslak tabanlar; mevcut alet referanslarında görülen ayrım. Tolerans üretim önerisidir, görüntüden ölçülmedi.",
+      "status": "draft",
+      "rule": "colour.role_palette"
+    },
+    {
+      "id": "red_tool_shell",
+      "scope": [
+        "machine",
+        "held_tool"
+      ],
+      "models": [
+        "mower",
+        "trimmer"
+      ],
+      "materials": [],
+      "note_contains": [
+        "Housing:",
+        "Rear flap:",
+        "Upper shell"
+      ],
+      "palette": [
+        "#BA3030",
+        "#8F2628"
+      ],
+      "tolerance_delta_e": 22,
+      "rationale": "Kırmızı ana kabuğu koyu mekanik bölümlerden ayıran üretim başlangıcı. Kırmızı ailesi mower-body ve trimmer-body kaynaklarında görülür; swatch ve toleranslar yorumdur.",
+      "status": "draft",
+      "rule": "colour.role_palette"
+    },
+    {
+      "id": "muted_siding",
+      "scope": [
+        "building"
+      ],
+      "materials": [
+        "Siding"
+      ],
+      "palette": [
+        "#99A8AE",
+        "#7D9799",
+        "#B7B6AA"
+      ],
+      "tolerance_delta_e": 18,
+      "rationale": "house-facade ve shed-front görüntülerindeki sakin kaplama için önerilen gri/mavi-yeşil başlangıçlar. Kullanıcı onaylı kesin albedo veya bütün bina varyantlarının zorunlu paleti değildir.",
+      "status": "draft",
+      "rule": "colour.role_palette"
+    },
+    {
+      "id": "light_frames",
+      "scope": [
+        "building"
+      ],
+      "materials": [
+        "Paint"
+      ],
+      "note_contains": [
+        "Corner boards",
+        "Corner, rake"
+      ],
+      "palette": [
+        "#D8DAD8",
+        "#D0D8DE"
+      ],
+      "tolerance_delta_e": 16,
+      "rationale": "Kaplamadan daha açık çerçeve rolünü kurmak için seçilmiş taslak renkler; kaynakların ışığını piksel piksel kopyalamaz.",
+      "status": "draft",
+      "rule": "colour.role_palette"
+    },
+    {
+      "id": "nozzle_green",
+      "scope": [
+        "held_tool"
+      ],
+      "models": [
+        "hose_nozzle"
+      ],
+      "materials": [],
+      "note_contains": [
+        "Head, neck, grip"
+      ],
+      "palette": [
+        "#326C43",
+        "#43845A"
+      ],
+      "tolerance_delta_e": 20,
+      "rationale": "hose-grip görüntüsündeki yeşil ana plastik için üretim başlangıcı. Source dokusunda taban RGB yoksa sayısal kontrol ölçülmedi olarak kalır; yeşil/sarı/koyu rol ayrımı görsel incelenir.",
+      "status": "draft",
+      "rule": "colour.role_palette"
+    },
+    {
+      "id": "nozzle_yellow",
+      "scope": [
+        "held_tool"
+      ],
+      "models": [
+        "hose_nozzle"
+      ],
+      "materials": [],
+      "note_contains": [
+        "Yellow body"
+      ],
+      "palette": [
+        "#C1A84D",
+        "#D2BB67"
+      ],
+      "tolerance_delta_e": 20,
+      "rationale": "hose-grip görüntüsündeki sarı gövde ve tetik için yeşilden ayrışan taslak başlangıç. Sayısal değerler referanstan kesin albedo ölçümü değildir.",
+      "status": "draft",
+      "rule": "colour.role_palette"
+    }
+  ]
 }

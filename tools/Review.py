@@ -69,7 +69,6 @@ def paths():
         "packs": os.path.join(ROOT, "Builds", "Review"),
         "decisions": os.path.join(ROOT, "tools", "blender", "decisions"),
         "style": os.path.join(ROOT, "tools", "blender", "style", "style.json"),
-        "lookdev": os.path.join(ROOT, "Builds", "Style", "lookdev"),
     }
 
 
@@ -153,10 +152,10 @@ def pack(model, stage, cls=None):
     if not os.path.exists(sheet):
         sys.exit(f"no sheet: {os.path.relpath(sheet, ROOT)}")
     # Validate style context before replacing an existing pack. Missing classification is allowed;
-    # invalid references, unsupported classes and over-budget guidance must still fail visibly.
+    # invalid references and unsupported classes must still fail visibly.
     style = read_json(p["style"])
     guide = None
-    if style and style.get("schema", 2) >= 3:
+    if style:
         import StyleGuide
         guide = StyleGuide.brief(ROOT, model, cls=cls, allow_unclassified=True)
     out = os.path.join(p["packs"], model)
@@ -185,30 +184,19 @@ def pack(model, stage, cls=None):
     for name in closeups:
         shutil.copyfile(os.path.join(folder, name[5:]), os.path.join(out, name))
         files.append(name)
+    style_boards, style_images = [], []
     if guide:
-        board = guide.get("board")
-        if board and os.path.exists(board):
-            shutil.copyfile(board, os.path.join(out, "style_references.png"))
-            files.append("style_references.png")
-    else:
-        # The art style: its board (both palettes and the sources) goes with every pack (skill art-style), with the heroes
-        # (the approved look, to compare pairwise) and the near misses (the style and the ways to miss it, each with its rule)
-        board = os.path.join(ROOT, "Builds", "Style", "style_board.png")
-        if os.path.exists(board):
-            shutil.copyfile(board, os.path.join(out, "style_board.png"))
-            files.append("style_board.png")
-        heroes = [h for h in (style or {}).get("heroes", []) if h != model]
-        tiles = [(hero_view(h), h) for h in heroes]
-        if strip([t for t in tiles if t[0]], os.path.join(out, "heroes.png")):
-            files.append("heroes.png")
-        rows = []
-        for near in (style or {}).get("lookdev", {}).get("near_miss_models", []):
-            row = [(os.path.join(p["lookdev"], f"near_{near}_style.png"), f"{near}: the style")]
-            row += [(os.path.join(p["lookdev"], f"near_{near}_{n['variant']}.png"), f"{n['variant']} ({n['rule']})")
-                    for n in style.get("near_misses", [])]
-            rows.append([r for r in row if os.path.exists(r[0])])
-        if strip_rows([r for r in rows if r], os.path.join(out, "near_misses.png")):
-            files.append("near_misses.png")
+        boards = guide.get("boards", [guide["board"]] if guide.get("board") else [])
+        for index, board in enumerate(boards):
+            name = "style_references" + (f"_{index + 1}" if index else "") + ".png"
+            shutil.copyfile(board, os.path.join(out, name))
+            files.append(name)
+            style_boards.append(name)
+        for reference in guide.get("reference_images", []):
+            name = f"style_reference_{reference['number']:02d}.png"
+            shutil.copyfile(reference["path"], os.path.join(out, name))
+            files.append(name)
+            style_images.append({"reference": reference["reference"], "file": name})
     pack_id = sha(spec.get("structure", "") + "".join(sha_file(os.path.join(out, f)) for f in files) + stage
                   + (guide["text"] + guide.get("rules_hash", "") if guide else ""))[:12]
     plan = spec.get("plan")
@@ -260,34 +248,13 @@ def pack(model, stage, cls=None):
     if guide:
         lines += ["", "**Scoped 3D style brief** (technical checks and asset approval are separate):", "",
                   guide["text"].strip()]
-        if "style_references.png" in files:
-            lines += ["", "Selected reference crops: `style_references.png`; use the numbered evidence in the brief."]
+        if style_boards:
+            lines += ["", "Reference overview boards: " + ", ".join(f"`{name}`" for name in style_boards) + "."]
+        if style_images:
+            lines += ["", "Full-resolution reference crops (read these for detail; board numbers match):"]
+            lines += [f"- {r['reference']}: `{r['file']}`" for r in style_images]
         lines += ["", "A style finding needs its rule ID, evidence, and a `location` in a pack image. "
                   "Draft guidance is advisory; do not present it as user-approved."]
-    elif style and "albedo" in style.get("measured", {}):
-        lines += ["", f"**Art style** (judge the renders against `style_board.png` and these rules): {style.get('summary', '')}"]
-        lines += [f"- `{r['id']}` ({r['kind']}): {r['text']}" for r in style.get("rules", [])]
-        if "heroes.png" in files:
-            lines += ["", f"**Against the heroes** (`heroes.png`: {', '.join(heroes)}, the look every asset matches): compare "
-                          "this model with them on colour, finish, detail density, edge softness and proportion. Each axis "
-                          "where it clearly differs is a \"style:\" finding."]
-        if "near_misses.png" in files:
-            lines += ["", "**Near misses** (`near_misses.png`): a model in the style, then the ways to miss it, each with the "
-                          "rule it breaks. If this model looks like one of them, report it under that rule."]
-        lines += ["", "**A \"style:\" finding needs a `location`:** the pack image and where in it "
-                      "(`view_front.png: the roof edge`); `record` refuses one without."]
-        try:
-            sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-            import Style
-            Style.ROOT = ROOT
-            problems, distance, _ = Style.check(model, style)
-            rule_problems, warnings, info = Style.rules_check(model, style)
-            lines += [f"- measured: base colours {'inside' if not problems else 'OUTSIDE: ' + '; '.join(problems)} the style; "
-                      f"farthest surface from the palette {distance} (CIELAB); {info['triangles']:,} triangles"
-                      + (f" ({info['class']})" if info["class"] else "")]
-            lines += [f"- measured: {m}" for m in rule_problems + warnings]
-        except (FileNotFoundError, KeyError):
-            pass
     previous = read_json(os.path.join(p["reviews"], model + ".json"))
     decided = [f for f in (previous or {}).get("findings", []) if f.get("status") in ("dismissed", "fixed")]
     if decided:
@@ -311,6 +278,7 @@ def pack(model, stage, cls=None):
     if guide:
         manifest["style_context"] = {"rules_hash": guide.get("rules_hash"),
                                      "class": guide.get("class"), "scope_status": guide.get("scope_status"),
+                                     "reference_boards": style_boards, "reference_images": style_images,
                                      "reference_ids": guide.get("reference_ids", []), "stats": guide.get("stats", {})}
     write_json(os.path.join(out, "manifest.json"), manifest)
     print(f"pack {pack_id}: {os.path.relpath(out, ROOT)} ({', '.join(files)}); reviewer instructions: "
@@ -319,61 +287,6 @@ def pack(model, stage, cls=None):
         print(f"Style: common rules only; class-specific assessment incomplete. "
               f"Use pack {model} --class CLASS or register its class in style.json.")
     return manifest
-
-
-def hero_view(model):
-    """A hero's first rendered view (its views.json order), or None."""
-    folder = os.path.join(paths()["renders"], model)
-    views = read_json(os.path.join(folder, "views.json"), {}).get("views", [])
-    for view in views:
-        path = os.path.join(folder, view.get("file", ""))
-        if view.get("type") != "reference" and view.get("file") and os.path.exists(path):
-            return path
-    return None
-
-
-def strip(tiles, out, height=420):
-    """Images side by side, each labelled below: [(path, label)] -> out (False when there are none)."""
-    from PIL import Image, ImageDraw
-    images = []
-    for path, label in tiles:
-        with Image.open(path) as image:
-            image = image.convert("RGB")
-            image.thumbnail((height * 2, height))
-            images.append((image, label))
-    if not images:
-        return False
-    sheet = Image.new("RGB", (sum(i.width + 8 for i, _ in images) + 8, height + 34), (250, 247, 240))
-    draw = ImageDraw.Draw(sheet)
-    x = 8
-    for image, label in images:
-        sheet.paste(image, (x, 8))
-        draw.text((x, height + 14), label, fill=(40, 36, 32))
-        x += image.width + 8
-    sheet.save(out)
-    return True
-
-
-def strip_rows(rows, out, height=260):
-    """Rows of labelled images (strip), one under the other: [[(path, label)]] -> out (False when there are none)."""
-    from PIL import Image
-    parts = []
-    for i, row in enumerate(rows):
-        part = out + f".{i}.png"
-        if strip(row, part, height):
-            parts.append(part)
-    if not parts:
-        return False
-    images = [Image.open(part).convert("RGB") for part in parts]
-    sheet = Image.new("RGB", (max(i.width for i in images), sum(i.height for i in images)), (250, 247, 240))
-    y = 0
-    for image, part in zip(images, parts):
-        sheet.paste(image, (0, y))
-        y += image.height
-        image.close()
-        os.remove(part)
-    sheet.save(out)
-    return True
 
 
 def decisions(model):

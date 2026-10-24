@@ -1,7 +1,7 @@
 """Local, reference-backed style documents. No model calls, rendering or mesh builds.
 
 The detailed guide and the human report share one source. Daily briefs select rules
-by class/material and pack at most a few reference crops into one image. Measurements
+by class/material without dropping instructions or supporting reference images. Measurements
 are optional evidence; they never rewrite the target style or approvals.
 """
 from __future__ import annotations
@@ -161,11 +161,9 @@ def validate_data(style, refs, root=None):
             errors.append(f'{eid}: example status must be baseline or approved')
         if example.get('status') == 'approved' and not example.get('decision'):
             errors.append(f'{eid}: selecting a style exemplar needs an explicit decision')
-    cost = style.get('guideline', {}).get('cost', {})
-    if not 1 <= cost.get('max_reference_images', 3) <= 6:
-        errors.append('max_reference_images must be 1..6')
-    if cost.get('max_brief_chars', 7000) < 1000:
-        errors.append('max_brief_chars must be at least 1000')
+    if style.get('colour_roles'):
+        import Style
+        errors.extend(Style.validate_colour_roles(style))
     return errors
 
 
@@ -190,19 +188,22 @@ def reference_image(root, ref):
     return image
 
 
-def cached_image(root, ref, side=900):
-    key = digest({'sha': ref['sha256'], 'crop': ref.get('crop'), 'side': side, 'format': 'jpeg-v1'})
-    path = Path(root) / OUTPUT / 'cache' / (key + '.jpg')
-    if not path.exists():
+def cached_image(root, ref, side=900, write=True):
+    full_size = side is None
+    key = digest({'sha': ref['sha256'], 'crop': ref.get('crop'), 'side': side,
+                  'format': 'png-full-v1' if full_size else 'jpeg-v1'})
+    path = Path(root) / OUTPUT / 'cache' / (key + ('.png' if full_size else '.jpg'))
+    if write and not path.exists():
         image = reference_image(root, ref)
-        image.thumbnail((side, side), Image.Resampling.LANCZOS)
+        if not full_size:
+            image.thumbnail((side, side), Image.Resampling.LANCZOS)
         data = io.BytesIO()
-        image.save(data, format='JPEG', quality=88)
+        image.save(data, format='PNG' if full_size else 'JPEG', **({} if full_size else {'quality': 88}))
         write_changed(path, data.getvalue())
     return path
 
 
-def board(root, references, destination):
+def board(root, references, destination, start_number=1):
     if not references:
         return None
     width, cell, height = 1440, 1440 // min(3, len(references)), 420
@@ -217,7 +218,7 @@ def board(root, references, destination):
         image.thumbnail((cell - 24, height - 60), Image.Resampling.LANCZOS)
         x, y = (i % 3) * cell, (i // 3) * height
         canvas.paste(image, (x + (cell - image.width) // 2, y + 12 + (height - 60 - image.height) // 2))
-        draw.text((x + 16, y + height - 36), str(i + 1), fill='#233c38', font=font)
+        draw.text((x + 16, y + height - 36), str(i + start_number), fill='#233c38', font=font)
     data = io.BytesIO()
     canvas.save(data, format='PNG')
     write_changed(destination, data.getvalue())
@@ -253,16 +254,16 @@ def example_state(root, example):
 def rule_signature(rule, refs, style=None):
     # A title, rationale, report prose or document revision does not affect modelling.
     semantic = {k: rule.get(k) for k in ('id', 'text', 'scope', 'materials', 'aspect', 'instructions',
-                                        'avoid', 'status', 'check', 'enforce')}
+                                        'avoid', 'status', 'check', 'enforce', 'guidance_review')}
     by_id = {r['id']: r for r in refs['references']}
-    semantic['evidence'] = [{k: by_id[e['reference']].get(k) for k in ('id', 'sha256', 'crop', 'roles', 'scope')}
-                            for e in rule.get('evidence', [])]
+    semantic['evidence'] = [dict({k: by_id[e['reference']].get(k) for k in ('id', 'sha256', 'crop', 'roles', 'scope')},
+                                status=e.get('status', 'supporting')) for e in rule.get('evidence', [])]
     style = style or {}
     parameters = {'finish.real_material': style.get('finish_by_kind'),
+                  'colour.role_palette': style.get('colour_roles'),
                   'detail.budgets': style.get('stylisation', {}).get('budgets_tris'),
                   'detail.floor': style.get('stylisation', {}).get('detail_floor_m'),
-                  'edges.chamfer': {k: style.get('stylisation', {}).get(k)
-                                    for k in ('chamfer_mm', 'chamfer_applies_to')}}
+                  'edges.chamfer': style.get('stylisation', {}).get('bevel_policy')}
     if rule['id'] in parameters:
         semantic['parameters'] = parameters[rule['id']]
     return digest(semantic)
@@ -295,6 +296,48 @@ def text_stats(text, crops=0):
             'excluded': 'image tokens, system instructions, chat history and tool results'}
 
 
+def guidance_notice(rule):
+    pending = rule.get('guidance_review', {})
+    if pending.get('status') != 'needs_review':
+        return ''
+    return ('Son kullanıcı kararı önceliklidir. Önceki ayrıntılar kaybolmaması için korunmuştur; '
+            'kararla çelişen bir talimatı uygulama. Uygulamadan önce şu alanları kararla uzlaştır: '
+            + ', '.join(pending.get('fields', [])) + '.')
+
+
+def evidence_label(evidence):
+    return {'supporting': 'destekleyici kaynak', 'needs_review': 'önceki kaynak; yeni kararı desteklediği henüz doğrulanmadı',
+            'superseded': 'yerine yeni karar geçti; uygulama kaynağı değil'}.get(evidence.get('status', 'supporting'), 'kaynak')
+
+
+def colour_targets(style, name=None, cls=None, materials=None):
+    return [r for r in style.get('colour_roles', []) if r.get('status') != 'retired'
+            and ((name is None and cls is None) or '*' in r.get('scope', ['*']) or cls in r.get('scope', []))
+            and (name is None or not r.get('models') or name in r['models'])
+            and (not materials or not r.get('materials') or set(materials).intersection(r['materials']))]
+
+
+def material_instructions(style, name=None, cls=None, materials=None):
+    lines = ['## Yüzey bitişleri',
+             'Malzemenin rolüne göre aşağıdaki bitişlerden seçim yap; belirli referans daha dar bir seçim tarif ediyorsa onu uygula.',
+             'matte = mat; satin = hafif, geniş yansıma; glossy = belirgin parlak yansıma; metallic = açıkta metal.',
+             '| Malzeme | Kullanılabilir bitiş |', '|---|---|']
+    lines += [f'| {kind} | {", ".join(finishes)} |' for kind, finishes in style.get('finish_by_kind', {}).items()
+              if not materials or kind in materials]
+    targets = colour_targets(style, name, cls, materials)
+    if targets:
+        lines += ['', '## Rol bazlı renk hedefleri',
+                  'Bunlar üretim için seçilmiş taslak başlangıç renkleridir; ışıklı görüntüden çıkarılmış kesin albedo değerleri değildir.',
+                  '| Rol | Kapsam / malzeme | Renk seçenekleri | Önerilen tolerans |', '|---|---|---|---|']
+        lines += [f'| {r["id"]} | {", ".join(r.get("materials", []))}; '
+                  f'{", ".join(r.get("models", r.get("scope", [])))}; {", ".join(r.get("note_contains", []))} | '
+                  f'{", ".join(r["palette"])} | ΔE76 ≤ {r["tolerance_delta_e"]} ({r["status"]}) |' for r in targets]
+        lines += [f'- {r["id"]}: {r["rationale"]}' for r in targets]
+        lines += ['Malzeme rengi bu başlangıç hedefinden uzaksa nedeni incele. Sayısal renk verisi olmayan kaynak dokularını '
+                  'aynı rol dağılımına göre görsel olarak değerlendir; ölçülmeyen yüzeye renk kontrolünden geçti deme.']
+    return lines
+
+
 def brief(root, name, cls=None, materials=None, write=True, *, allow_unclassified=False):
     root = Path(root)
     if not re.fullmatch(r'[A-Za-z0-9_-]+', name):
@@ -311,10 +354,11 @@ def brief(root, name, cls=None, materials=None, write=True, *, allow_unclassifie
     scores = {}
     for r in rules:
         for e in r.get('evidence', []):
+            if e.get('status') == 'superseded':
+                continue
             scores[e['reference']] = scores.get(e['reference'], 0) + (2 if '*' not in r['scope'] else 1)
     eligible = {r['id']: r for r in refs['references'] if '*' in r['scope'] or cls in r['scope']}
     chosen = [eligible[rid] for rid in sorted(scores, key=lambda rid: (-scores[rid], rid)) if rid in eligible]
-    chosen = chosen[:style['guideline'].get('cost', {}).get('max_reference_images', 3)]
     hashes = {r['id']: rule_signature(r, refs, style) for r in rules}
     lines = [f'# {name} — {CLASSES.get(cls, cls) if cls else "Sınıfsız: ortak kurallar"}', '',
              f'Stil: {style["name"]} | belge r{style["guideline"]["revision"]} | {style["guideline"]["status"]}',
@@ -326,39 +370,53 @@ def brief(root, name, cls=None, materials=None, write=True, *, allow_unclassifie
                   f'Seçenekler: {choices}.']
     lines += ['', '## Uygulanacak kurallar']
     for rule in rules:
-        lines.append(f'- [{rule["id"]}] {rule["text"]}')
+        lines += ['', f'### [{rule["id"]}] {rule.get("title", rule["id"])}', rule['text'],
+                  f'Durum: {rule["status"]} · {ORIGINS[rule["origin"]]}']
+        if guidance_notice(rule):
+            lines.append(guidance_notice(rule))
+        lines += ['- ' + step for step in rule.get('instructions', []) if step != rule['text']]
+        if rule.get('avoid'):
+            lines.append('Kaçın: ' + '; '.join(rule['avoid']))
+        if rule.get('rationale'):
+            lines.append('Gerekçe: ' + rule['rationale'])
+        lines += [f'Kaynak: {e["reference"]} — {evidence_label(e)}. {e.get("note", "")}'
+                  for e in rule.get('evidence', [])]
+        lines.append('Kontrol: ' + rule['check'])
+    lines += ['', *material_instructions(style, name, cls, materials)]
     budget_values = style.get('stylisation', {}).get('budgets_tris', {}).get(cls)
     if budget_values:
         lines += ['', f'Teknik başlangıç bütçesi ({cls}): {budget_values[0]:,}–{budget_values[1]:,} üçgen. '
                   'Devralınmış öneridir; alt değer doldurulacak hedef, aralık da görsel stil kanıtı değildir.']
     if chosen:
-        lines += ['', '## Tek görsel pano']
-        lines += [f'{i + 1}. {ref["id"]}: {ref["label"]}. {ref["observation"]}' for i, ref in enumerate(chosen)]
+        lines += ['', '## Referans görselleri',
+                  'Panolar genel bakış içindir. Küçük ayrıntıları numarası eşleşen tam çözünürlüklü kırpımdan incele.']
+        lines += [f'{i + 1}. {ref["id"]}: {ref["label"]}. {ref["observation"]} Sınır: {ref["limitations"]} '
+                  f'[Tam kırpım](<{cached_image(root, ref, side=None, write=False).as_posix()}>)'
+                  for i, ref in enumerate(chosen)]
         lines += ['Ekran renkleri ışık ve malzemeyi birlikte içerir; albedo olarak kopyalama.']
     approved = [e for e in style['guideline'].get('examples', [])
                 if cls in e.get('scope', []) and example_state(root, e) == 'approved']
     if approved:
-        lines += ['', 'Onaylı uygulama örneği: ' + approved[0]['image'] + ' (yalnızca gerekirse aç).']
+        lines += ['', *('Onaylı uygulama örneği: ' + e['image'] for e in approved)]
     elif cls is not None:
         lines += ['', 'Bu sınıf için güncel onaylı uygulama örneği yok; mevcut modeller hedef standardı sayılmaz.']
     lines += ['', 'İnceleme: siluet/oran → yüzey ve malzeme → detay yoğunluğu. Bulguyu kural ve görünümle belirt.',
               'Geri bildirim yalnızca ilgili kuralı değiştirir; genel stil değişikliği olarak varsayma.']
     text = '\n'.join(lines) + '\n'
-    budget = style['guideline'].get('cost', {}).get('max_brief_chars', 7000)
-    if len(text) > budget:
-        # Preserve every rule; shorten repeated image descriptions, never truncate instructions.
-        for ref in chosen:
-            text = text.replace('. ' + ref['observation'], '')
-    if len(text) > budget:
-        raise ValueError(f'Brief is {len(text)} characters, budget {budget}; narrow material scope or shorten shared rules')
     path = root / OUTPUT / 'briefs' / (name + '.md')
-    board_path = root / OUTPUT / 'briefs' / (name + '_references.png')
+    boards = [root / OUTPUT / 'briefs' / (name + '_references' + (f'_{i // 3 + 1}' if i else '') + '.png')
+              for i in range(0, len(chosen), 3)]
+    images = [{'reference': ref['id'], 'number': i + 1,
+               'path': str(cached_image(root, ref, side=None, write=write))} for i, ref in enumerate(chosen)]
     stats = text_stats(text, len(chosen))
-    result = {'text': text, 'path': str(path), 'board': str(board_path) if chosen else None, 'stats': stats,
+    stats.update(image_count=len(boards) + len(images), board_count=len(boards), detail_images=len(images))
+    result = {'text': text, 'path': str(path), 'board': str(boards[0]) if boards else None,
+              'boards': [str(p) for p in boards], 'reference_images': images, 'stats': stats,
               'class': cls, 'scope_status': 'class_scoped' if cls else 'common_only',
               'rules_hash': digest(hashes), 'rule_ids': list(hashes), 'reference_ids': [r['id'] for r in chosen]}
     if write:
-        board(root, chosen, board_path)
+        for i, board_path in enumerate(boards):
+            board(root, chosen[i * 3:i * 3 + 3], board_path, start_number=i * 3 + 1)
         write_changed(path, text)
         write_json(path.with_suffix('.json'), {k: v for k, v in result.items() if k != 'text'})
     return result
@@ -375,12 +433,15 @@ def detailed_text(style, refs):
                   f'Kapsam: {", ".join(r["scope"])}. Malzemeler: {", ".join(r.get("materials", [])) or "tümü"}.',
                   f'Kaynak türü: {ORIGINS[r["origin"]]}; güven: {r["confidence"]}; durum: {r["status"]}.',
                   r.get('rationale', ''), *('- ' + line for line in r.get('instructions', []))]
+        if guidance_notice(r):
+            lines.append(guidance_notice(r))
         lines += ['Kaçın: ' + '; '.join(r['avoid'])] if r.get('avoid') else []
-        lines += [f'Kanıt: {e["reference"]} ({e["aspect"]}) — {e.get("note", "")}' for e in r.get('evidence', [])]
+        lines += [f'Kaynak: {e["reference"]} ({e["aspect"]}) — {evidence_label(e)}. {e.get("note", "")}'
+                  for e in r.get('evidence', [])]
         if r.get('decision'):
             lines.append('Karar/gerekçe: ' + r['decision'])
         lines.append('Kontrol: ' + r['check'])
-    lines += ['', '## Referans kaydı']
+    lines += ['', *material_instructions(style), '', '## Referans kaydı']
     lines += [f'- {r["id"]}: {r["path"]}; crop={r.get("crop")}; amaç={", ".join(r["roles"])}. '
               f'{r["observation"]} Sınır: {r["limitations"]}' for r in refs['references']]
     lines += ['', '## Belirsizlikler', *('- ' + u for u in style['guideline'].get('uncertainties', [])),
@@ -423,16 +484,21 @@ def human_html(root, style, refs, stats):
     for r in style['rules']:
         if r.get('status') == 'retired':
             continue
-        evidence = list(dict.fromkeys(e['reference'] for e in r.get('evidence', [])))[:2]
-        visuals = ''.join(f'<img loading="lazy" src="{urls[rid]}" alt="{esc(by_id[rid]["label"])}">' for rid in evidence)
+        evidence = list(dict.fromkeys(e['reference'] for e in r.get('evidence', [])))
+        visuals = ''.join(f'<figure><img loading="lazy" src="{urls[e["reference"]]}" '
+                          f'alt="{esc(by_id[e["reference"]]["label"])}"><figcaption>{esc(e["reference"])} · '
+                          f'{esc(evidence_label(e))}</figcaption></figure>' for e in r.get('evidence', []))
         steps = ''.join(f'<li>{esc(s)}</li>' for s in r.get('instructions', []))
         avoid = ''.join(f'<li>{esc(s)}</li>' for s in r.get('avoid', []))
         sources = ', '.join(evidence) or r.get('decision', '')
         cards = technical_cards if r['origin'] == 'technical' else rule_cards
+        notice = f'<p class="note">{esc(guidance_notice(r))}</p>' if guidance_notice(r) else ''
+        decision = f'<p>Güncel karar: {esc(r["decision"])}</p>' if r.get('decision') else ''
         cards.append(f'<article class="rule" data-scope="{esc(" ".join(r["scope"]))}" id="{esc(r["id"])}">'
                           f'<div class="rule-images">{visuals}</div><div class="rule-body">'
                           f'<span class="eyebrow">{esc(ORIGINS[r["origin"]])} · {esc(r["id"])}</span>'
                           f'<h3>{esc(r.get("title", r["id"]))}</h3><p class="instruction">{esc(r["text"])}</p>'
+                          f'{notice}{decision}'
                           f'<p>{esc(r.get("rationale", ""))}</p><ul>{steps}</ul>'
                           f'<details><summary>Uygulama sınırları ve kontrol</summary><ul>{avoid}</ul>'
                           f'<p>Kaynak: {esc(sources)}</p><p>Kontrol: {esc(r["check"])}</p>'
@@ -457,7 +523,14 @@ def human_html(root, style, refs, stats):
     history = ''.join(f'<li>{esc(str(i.get("date", "")))} — {esc(i.get("reason", i.get("note", "")))}</li>'
                       for i in style['guideline'].get('history', []))
     costs = ''.join(f'<tr><td>{esc(name)}</td><td>{s["characters"]:,}</td><td>~{s["estimated_text_tokens"]:,}</td>'
-                    f'<td>{s["image_count"]} pano / {s["reference_crops"]} kırpıntı</td></tr>' for name, s in stats.items())
+                    f'<td>{s["board_count"]} pano / {s["detail_images"]} tam kırpım</td></tr>' for name, s in stats.items())
+    finishes = ''.join(f'<tr><td>{esc(k)}</td><td>{esc(", ".join(v))}</td></tr>'
+                       for k, v in style.get('finish_by_kind', {}).items())
+    colours = ''.join(f'<tr><td>{esc(r["id"])}</td><td>'
+                      + ''.join(f'<span style="display:inline-block;background:{c};width:22px;height:22px;vertical-align:middle;'
+                                f'border:1px solid #888" title="{c}"></span> {c} ' for c in r['palette'])
+                      + f'</td><td>ΔE76 ≤ {r["tolerance_delta_e"]} · {esc(r["status"])}</td>'
+                      f'<td>{esc(r["rationale"])}</td></tr>' for r in colour_targets(style))
     return f'''<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{esc(style['name'])} · Stil rehberi</title><style>
 :root{{color-scheme:light;--ink:#243a37;--muted:#606c66;--paper:#f4f0e7;--line:#d9d9ca;--accent:#a34f35}}
@@ -476,7 +549,7 @@ figure{{margin:0;background:#fffdf8;border:1px solid var(--line);border-radius:1
 details{{border-top:1px solid var(--line);padding-top:12px;font-size:14px}}summary{{cursor:pointer;font-weight:600}}nav{{display:flex;gap:8px;flex-wrap:wrap;position:sticky;top:0;background:var(--paper);padding:12px 0;z-index:1}}
 button{{border:1px solid #b5c1b6;background:#fffdf8;color:var(--ink);border-radius:30px;padding:9px 17px;cursor:pointer}}button.active{{background:var(--ink);color:white}}
 .note{{padding:24px 30px;border-left:4px solid var(--accent);background:#ebe6d9}}table{{border-collapse:collapse;width:100%;font-size:14px}}td,th{{text-align:left;border-bottom:1px solid var(--line);padding:12px}}.table{{overflow-x:auto}}footer{{color:var(--muted);font-size:13px}}
-@media(max-width:700px){{header{{padding:30px 24px}}.cover-layout{{display:block}}.cover-images{{margin-top:24px}}.rule{{display:block}}.rule-body{{padding:22px}}.rule-images{{flex-direction:row}}.rule-images img{{width:48%}}h2{{font-size:28px}}}}
+@media(max-width:700px){{header{{padding:30px 24px}}.cover-layout{{display:block}}.cover-images{{margin-top:24px}}.rule{{display:block}}.rule-body{{padding:22px}}.rule-images{{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}}h2{{font-size:28px}}}}
 @media print{{nav,button{{display:none}}details{{display:block}}.rule,figure{{break-inside:avoid}}header{{color:#213d38;background:white}}}}
 </style></head><body><header><div class="cover-layout"><div><span class="eyebrow">Copycat Opus / 3D asset dili</span><h1>Bir bahçenin<br>ortak görsel dili.</h1>
 <span class="tag">{'Taslak' if style['guideline']['status'] == 'draft' else esc(style['guideline']['status'])} · revizyon {style['guideline']['revision']}</span><p class="lede">{esc(style['summary'])}</p></div>
@@ -485,9 +558,13 @@ button{{border:1px solid #b5c1b6;background:#fffdf8;color:var(--ink);border-radi
 <section><h2>Görsel dayanaklar</h2><p>Her görselin hangi özelliğini kullandığımız kayıtlı. Farklı kaynakların renklerini tek bir zorunlu palete ortalamıyoruz.</p><div class="grid">{reference_cards}</div></section>
 <section><h2>Model yaparken uygulanacak kararlar</h2><nav>{navigation}</nav><div id="rules">{''.join(rule_cards)}</div>
 <details><summary>Teknik üretim tercihleri · görsellerden ölçülmüş stil kuralları değildir</summary>{''.join(technical_cards)}</details></section>
+<section><h2>Malzemeler nasıl görünmeli?</h2><p>Mat yüzeyler yaygın, yumuşak ışık geçişi; saten yüzeyler hafif parlama; parlak yüzeyler daha belirgin yansıma verir. Aynı bitişi bütün malzemelere uygulama.</p>
+<div class="table"><table><thead><tr><th>Malzeme</th><th>Kullanılabilir bitiş</th></tr></thead><tbody>{finishes}</tbody></table></div></section>
+<section><h2>Renk rolleri</h2><p>Bu renkler mevcut oyunun referansları için önerilen üretim başlangıçlarıdır. Sayısal toleranslar taslak yardımcı kontrollerdir; görsel inceleme ile birlikte kullanılır. Kaynak dokuda sayısal malzeme rengi yoksa kontrol bunu ölçülmedi olarak belirtir.</p>
+<div class="table"><table><thead><tr><th>Rol</th><th>Başlangıç renkleri</th><th>Tolerans</th><th>Gerekçe</th></tr></thead><tbody>{colours}</tbody></table></div></section>
 <section><h2>Oyundaki mevcut örnekler</h2><p>Bu görüntüler objeleri oyun içindeki montajlarıyla gösterir. Işık ve sis de görüntüye etki eder. Model onayı, bütün özelliklerinin stil standardı olduğu anlamına gelmez.</p><div class="grid">{''.join(examples)}</div></section>
 <section class="note"><h2>Henüz kesinleştirmediğimiz noktalar</h2><ul>{uncertain}</ul></section>
-<section><h2>Günlük kullanım ve maliyet</h2><p>Ayrıntılı AI rehberi kalıcı kaynak olarak tutulur. Günlük modellemede ilgili sınıf brief'i ve bir görsel pano kullanılır; bütün kaynaklar tekrar okunmaz. Rapor ve brief üretimi yerel çalışır, AI çağrısı veya Blender/Unity çalıştırması yapmaz.</p>
+<section><h2>Günlük kullanım ve maliyet</h2><p>Model brief'i ilgili kuralların uygulama adımlarını, malzeme tercihlerini ve gerekli görsellerin tamamını içerir. Metin veya görsel sayısı sınırıyla bilgi kesilmez. Önbellek ve kapsam seçimi tekrar işi azaltır. Rapor ve brief üretimi yerel çalışır, AI çağrısı veya Blender/Unity çalıştırması yapmaz.</p>
 <div class="table"><table><thead><tr><th>Brief</th><th>Karakter</th><th>Tahmini metin token'ı</th><th>Görseller</th></tr></thead><tbody>{costs}</tbody></table></div>
 <small>Tahmin UTF-8 bayt / 3 hesabıdır; gerçek tokenizer veya kota ölçümü değildir. Görsel, sistem talimatı, sohbet geçmişi ve araç çıktısı token'ları hariçtir.</small></section>
 <section><h2>Bu sürümde ne değişti?</h2><ul>{history}</ul></section><footer>Kaynak: tools/blender/style/style.json + references.json. Aynı veriden kullanıcı raporu, ayrıntılı AI rehberi ve kısa brief'ler üretilir. Referans görüntülerinin ölçümleri görünümü açıklamaya yardım eder; tek başına stil onayı vermez.</footer></main>
@@ -507,7 +584,7 @@ def build(root):
     report = output / 'art_bible.html'
     changed = write_changed(report, human_html(root, style, refs, stats)) or changed
     # The overview is for a new style session; per-asset review gets a scoped board.
-    board(root, refs['references'][:6], output / 'style_board.png')
+    board(root, refs['references'], output / 'style_board.png')
     manifest = {'schema': 1, 'style_source_hash': digest(style), 'references_hash': digest(refs),
                 'guide': text_stats(text), 'briefs': stats, 'revision': style['guideline']['revision'],
                 'model_builds': 0, 'ai_calls': 0, 'files': {'guide': str(guide), 'report': str(report)}}
@@ -543,28 +620,82 @@ def measure(root, images=None):
     return result
 
 
-def revise(root, rule_id, text, note):
+def revise(root, rule_id, text, note, patch=None):
+    """Apply an actual user decision without discarding unaffected guidance.
+
+    A summary alone cannot reconcile old implementation detail or its evidence.
+    A structured patch supplies changed fields and lists unchanged fields the AI
+    has reconciled against the decision in reviewed_fields. This is not a claim
+    that the user separately approved every retained implementation detail.
+    """
     root = Path(root)
     style, refs = require_valid(root)
     rule = next((r for r in style['rules'] if r['id'] == rule_id), None)
     if rule is None or rule.get('status') == 'retired':
         raise ValueError('Unknown or retired rule')
-    if not text.strip() or not note.strip():
-        raise ValueError('New instruction and actual user feedback are required')
+    if not isinstance(note, str) or not note.strip():
+        raise ValueError('Actual user feedback is required')
+    if patch is not None and not isinstance(patch, dict):
+        raise ValueError('Revision patch must be a JSON object')
+    updates = copy.deepcopy(patch or {})
+    detail_fields = ('instructions', 'avoid', 'rationale', 'evidence')
+    allowed = {'text', *detail_fields, 'scope', 'materials', 'reviewed_fields'}
+    if set(updates) - allowed:
+        raise ValueError('Unknown revision fields: ' + ', '.join(sorted(set(updates) - allowed)))
+    if text is not None:
+        if 'text' in updates and updates['text'] != text:
+            raise ValueError('--text and patch text disagree')
+        updates['text'] = text
+    if not updates:
+        raise ValueError('Provide --text or a nonempty --patch')
+    reviewed = updates.pop('reviewed_fields', [])
+    if not isinstance(reviewed, list) or any(not isinstance(f, str) or f not in detail_fields for f in reviewed):
+        raise ValueError('reviewed_fields must name instructions, avoid, rationale or evidence')
+    for field in ('text', 'rationale'):
+        if field in updates and (not isinstance(updates[field], str) or (field == 'text' and not updates[field].strip())):
+            raise ValueError(f'{field} must be a string' + (' with an instruction' if field == 'text' else ''))
+    for field in ('instructions', 'avoid', 'scope', 'materials'):
+        if field in updates and (not isinstance(updates[field], list)
+                                 or any(not isinstance(item, str) or not item.strip() for item in updates[field])
+                                 or (field == 'scope' and not updates[field])):
+            raise ValueError(f'{field} must be a list of nonempty strings')
+    if 'evidence' in updates:
+        if not isinstance(updates['evidence'], list) or any(not isinstance(e, dict) for e in updates['evidence']):
+            raise ValueError('evidence must be a list of reference records')
+        if any(e.get('status', 'supporting') not in ('supporting', 'needs_review', 'superseded')
+               for e in updates['evidence']):
+            raise ValueError('Evidence status must be supporting, needs_review or superseded')
     before = snapshot_data(style, refs)
     old = copy.deepcopy(rule)
-    rule.update(text=text, origin='user_decision', decision=note, status='active')
-    # Detailed instructions may contradict the new feedback. Keep them visible for
-    # revision instead of silently treating the old implementation as approved.
-    rule['previous_guidance'] = {k: old.get(k) for k in ('text', 'instructions', 'avoid', 'rationale', 'evidence', 'origin')}
-    rule['instructions'] = [text]
-    rule['avoid'] = []
-    rule['rationale'] = note
-    rule['evidence'] = []  # Earlier images are historical evidence, not proof of the user's new choice.
+    checked = set(updates) | set(reviewed)
+    pending = [field for field in detail_fields if old.get(field) and field not in checked]
+    rule.update(updates)
+    rule.update(origin='user_decision', decision=note)
+    # Retain the links as visible context. They must not silently become proof of
+    # the new decision. Explicitly supplied/reviewed evidence can support it.
+    for evidence in rule.get('evidence', []):
+        if 'evidence' in pending and evidence.get('status') != 'superseded':
+            evidence['status'] = 'needs_review'
+        elif 'evidence' in reviewed and evidence.get('status') != 'superseded':
+            evidence['status'] = 'supporting'
+    if any(e.get('status') == 'needs_review' for e in rule.get('evidence', [])) and 'evidence' not in pending:
+        pending.append('evidence')
+    rule['guidance_review'] = {
+        'status': 'needs_review' if pending else 'reconciled',
+        'fields': pending,
+        'decision_precedence': 'The latest user decision governs. Reconcile preserved provisional details before use; '
+                               'do not follow a retained clause that contradicts it.',
+    }
+    rule['status'] = 'draft' if pending else 'active'
     guide = style['guideline']
     guide['revision'] += 1
+    # Keep full snapshots in an append-only sequence. Repeated edits never
+    # overwrite the only copy of an earlier instruction, image link or decision.
     guide.setdefault('history', []).append({'date': datetime.date.today().isoformat(), 'rule': rule_id,
-                                          'reason': note, 'before': old['text'], 'after': text})
+                                          'revision': guide['revision'], 'reason': note,
+                                          'before': old['text'], 'after': rule['text'],
+                                          'before_rule': old, 'after_rule': copy.deepcopy(rule),
+                                          'reconciled_fields': sorted(set(detail_fields) & checked)})
     errors = validate_data(style, refs, root)
     if errors:
         raise ValueError('; '.join(errors))
@@ -619,7 +750,8 @@ def main():
     p.add_argument('name'); p.add_argument('--class', dest='cls'); p.add_argument('--materials')
     p = sub.add_parser('snapshot'); p.add_argument('--out', type=Path, required=True)
     p = sub.add_parser('impact'); p.add_argument('snapshot', type=Path)
-    p = sub.add_parser('revise'); p.add_argument('rule'); p.add_argument('--text', required=True); p.add_argument('--note', required=True)
+    p = sub.add_parser('revise'); p.add_argument('rule'); p.add_argument('--text'); p.add_argument('--note', required=True)
+    p.add_argument('--patch', type=Path, help='JSON changed fields and reviewed_fields reconciled against the user note')
     p = sub.add_parser('add-reference'); p.add_argument('path'); p.add_argument('--id', required=True)
     p.add_argument('--roles', required=True); p.add_argument('--scope', required=True); p.add_argument('--crop')
     p.add_argument('--label', default=''); p.add_argument('--group', default='user-reference'); p.add_argument('--note', default='')
@@ -645,7 +777,8 @@ def main():
         elif args.action == 'impact':
             print(json.dumps(impact_data(read(args.snapshot), snapshot_data(*require_valid(root))), ensure_ascii=False))
         elif args.action == 'revise':
-            print(json.dumps(revise(root, args.rule, args.text, args.note), ensure_ascii=False))
+            changes = json.loads(args.patch.read_text(encoding='utf-8-sig')) if args.patch else None
+            print(json.dumps(revise(root, args.rule, args.text, args.note, changes), ensure_ascii=False))
         else:
             print(json.dumps(add_reference(root, args.path, args.id, args.roles.split(','), args.scope.split(','),
                                            args.label, args.group, [int(v) for v in args.crop.split(',')] if args.crop else None,
