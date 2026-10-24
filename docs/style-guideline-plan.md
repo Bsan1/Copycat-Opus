@@ -1,6 +1,6 @@
 # Görsellerden gelişen 3D stil rehberi — uygulama planı
 
-24 Ekim 2026. Durum: inceleme tamamlandı; aşağıdaki işlev değişiklikleri henüz uygulanmadı.
+24 Ekim 2026. Durum: ilk uygulama tamamlandı. Kaynaklı stil verisi, iki belge, kısa brief, sınırlı güncelleme ve teknik entegrasyon mevcut. Görsel stil içeriği kullanıcı onayı verilmiş sayılmayan taslaktır.
 
 ## Hedef ve kapsam
 
@@ -110,3 +110,17 @@ Yerel görsel hazırlama, isteğe bağlı ölçümler ve rapor üretimi içerik 
 ## İlk somut teslimat
 
 Bu oyunun mevcut referanslarıyla oluşturulmuş kaynaklı stil taslağı, görsel kullanıcı raporu, ayrıntılı AI rehberi ve üç sınıfa ait kısa brief. Kullanıcının bir örnek düzeltmesinin yalnızca ilgili kurallara ve belgelere yansıdığı gösterilecek. Sonraki gerçek model bu rehberi kullanarak üretilecek; o modelin sonuçları üzerinden stil geliştirmeye devam edilecek.
+
+## Teslim edilen ilk sürüm
+
+- `tools/StyleGuide.py`: kaynak doğrulama, içerik hash'li görsel önbellek, iki belge üretimi, sınıf/malzeme brief'i, değişiklik etkisi, hedefli geri bildirim ve yeni referans kaydı. Yerel çalışır; AI API çağrısı, renderer veya Unity süreci başlatmaz.
+- `style.json` schema 3 ve `references.json`: mevcut yedi görüntüden dokuz incelenmiş kırpıntı, 18 taslak kural, emekliye ayrılmış iki eski kural. Eski ölçümler tarihsel veri olarak saklandı; yeni modelleri tanımlayan renk kapısı olmaktan çıkarıldı.
+- Üç küçük oyun içi örnek `docs/style/examples/` altında saklandı. Bunlar mevcut üretim örnekleridir; stil onayı değildir. Eski oyun çekimlerinin güncel asset build'iyle birebir eşleştiği yeni render ile doğrulanmadığı için bu sınır kayıtta açıklanır.
+- `Builds/Style/art_bible.html`, `style_guide_ai.md` ve `briefs/` aynı kaynaktan üretilir. Kullanıcı raporu kaynak görselleri, sınıf filtrelerini, görsel kuralları, açılır teknik tercihleri ve belirsizlikleri içerir.
+- `Style.py`, `Review.py` ve `Verify.ps1` yeni akışa bağlıdır. İnceleme paketinde kısa rehber ve ilgili tek pano bulunur. Tam rehber, tüm referanslar ve eski hero/near-miss panoları otomatik olarak eklenmez.
+- Mower/house/tree brief'leri yaklaşık 2.400–2.600 karakter, bir pano ve bir veya iki kırpıntıdır. Metin token tahmini yalnızca UTF-8 bayt / 3 yaklaşımıdır; gerçek kota, görsel, sistem veya geçmiş maliyetini ölçmez.
+- Geri bildirim kapsamı, kaynak amacı, eski onay, değişmeyen çıktılar ve build başlatmama davranışları izole testlerle kontrol edilir. Deneme geri bildirimi gerçek stil dosyasına kullanıcı kararı gibi yazılmadı.
+- Doğrulama: 74 araç testi başarılı; dört düzenlenen skill şeması geçerli. Rapor tarayıcıda açıldı, kapak ve sınıf filtresi kontrol edildi. Aynı kaynaklarla ikinci belge üretimi çıktı dosyalarını değiştirmedi.
+- Oyun kodu, shader'lar, generator'lar ve modeller değiştirilmedi. Bağımsız pipeline reposu kapsam dışında kaldı. Yeni oyun/Blender build'i çalıştırılmadı.
+
+Kullanım başlangıcı: `py -3 tools/Style.py bible`; model işi için `py -3 tools/Style.py brief <model> --class <class>`. Ayrıntılı komutlar README'nin Art style maddesinde ve oyun içindeki art-style skill'inde bulunur.

@@ -7,6 +7,8 @@ You are reviewing a procedurally generated 3D model for **functional and structu
 - `sheet.png`: labelled renders from several angles, the material card, the **plan card** (every component: role, how it moves, seen or guessed, its job, what it is attached to) and, when available, reference crops.
 - `brief.md`: purpose, sources, the plan table, declared links, the measured gate numbers, the generator's notes on the source, and the guidance for this object's category.
 
+- `style_references.png`: optional numbered crops selected for this asset; source IDs and limitations are in the brief.
+
 ## Look for specific contradictions
 
 Check each of these against the renders:
@@ -21,6 +23,7 @@ Check each of these against the renders:
 - **Construction:** is it built the way such things are really built? Look at the joinery, the knots, the fasteners, the order of the layers.
 - **Use:** is what the hands hold where hands reach, and sized for them?
 - **Source:** do the shapes contradict the generator's notes or the reference crops? Is a guessed part implausible?
+- **Art style:** use the scoped rules and evidence in the brief only. Draft rules are advisory. A finding starts with `style:` and gives the rule ID and `location` (`<pack image>: <where>`).
 - **Pretend functions:** is there a detail that suggests a function the object cannot have (a cable going nowhere, a button on a part nobody can reach), or geometry that contradicts another part?
 
 ## Do not

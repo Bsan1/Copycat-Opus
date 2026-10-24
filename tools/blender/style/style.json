@@ -1,8 +1,8 @@
 {
-  "schema": 2,
+  "schema": 3,
   "style_version": "1.1",
-  "name": "Copycat Opus: the yard of the trailer",
-  "summary": "Stylised, soft and warm: simple readable shapes with gently chamfered edges, painted-looking surfaces with real grain under the paint, a pastel hazy light with a lavender sky; nothing glossy that is not really glossy, nothing plastic-looking.",
+  "name": "Copycat Opus: başlangıç stil taslağı",
+  "summary": "Okunur ana kütleler, malzemeye göre yüzey ayrımı, seçilmiş ayrıntılar; aletlerde renk vurgusu, mimaride sakin kaplama ve açık çerçeveler. Mevcut trailer üzerinden hazırlanmış, kullanıcı onayı bekleyen taslak.",
   "stylisation": {
     "anchor": "the trailer's yard: a cosy, stylised garden game, simple painted forms under a soft pastel light",
     "tie_breaker": "readability from the game camera beats realism; the source frames beat taste",
@@ -124,112 +124,595 @@
       "matte"
     ]
   },
-  "heroes": [
-    "shed",
-    "mower"
-  ],
   "exempt": {
     "calibration": "a technical colour chart for checking the camera and the light, not part of the look"
   },
   "rules": [
     {
       "id": "shape.stylised",
-      "kind": "invariant",
-      "check": "review",
-      "text": "simple stylised shapes over scanned realism; the silhouette reads from the game camera"
-    },
-    {
-      "id": "shape.one_shell",
-      "kind": "invariant",
-      "check": "qc.construction + review",
-      "text": "one shell per real piece, no stacked primitives; revolved parts are one profile with details pushed out of it"
+      "title": "Önce ana kütleler",
+      "text": "Nesneyi az sayıda açıkça ayrılan ana kütleyle okunur kur.",
+      "kind": "tunable",
+      "check": "review: ilgili kaynak crop ve model görünüşünü yan yana incele",
+      "enforce": "warn",
+      "aspect": "shape",
+      "scope": [
+        "*"
+      ],
+      "origin": "observation",
+      "evidence": [
+        {
+          "reference": "mower-body",
+          "aspect": "shape",
+          "note": "Tabla ve motor ayrımı."
+        },
+        {
+          "reference": "shed-front",
+          "aspect": "shape",
+          "note": "Çatı, duvar ve kapı ayrımı."
+        }
+      ],
+      "rationale": "Kaynaklarda nesnenin kimliği küçük ayrıntılardan önce büyük hacimlerden okunuyor.",
+      "instructions": [
+        "Silueti ve büyük hacimleri ayrıntıdan önce kontrol et.",
+        "Yuvarlak kabuğu kesintisiz yüzey olarak; mimariyi açık duvar ve çatı düzlemleriyle kur."
+      ],
+      "avoid": [
+        "Her yüzeyi küçük çıkıntılarla doldurmak."
+      ],
+      "confidence": "medium",
+      "status": "draft"
     },
     {
       "id": "shape.source_proportions",
-      "kind": "invariant",
-      "check": "Compare.py + review",
-      "text": "proportions follow the source even when not realistic; detail at the source's scale (small tread blocks, not toy lugs)"
-    },
-    {
-      "id": "edges.chamfer",
+      "title": "Oranları objenin işleviyle koru",
+      "text": "Referansın hacim ilişkilerini koru; stil adına her parçayı tombullaştırma.",
       "kind": "tunable",
-      "check": "Style.py report (bevels_mm against chamfer_mm) + review",
-      "text": "hard parts: a single-segment chamfer within stylisation.chamfer_mm, with weighted normals, so edges catch the light softly",
-      "enforce": "warn"
-    },
-    {
-      "id": "edges.soft_shells",
-      "kind": "tunable",
-      "check": "review",
-      "text": "soft moulded shells: plain smoothing, no area weighting"
-    },
-    {
-      "id": "surfaces.painted",
-      "kind": "invariant",
-      "check": "review (near miss: glossy_plastic)",
-      "text": "a painted look, never flat plastic: a real CC0 grain or tone under the paint, a little tone variation per piece (4-8 %)"
+      "check": "review: ilgili kaynak crop ve model görünüşünü yan yana incele",
+      "enforce": "warn",
+      "aspect": "proportion",
+      "scope": [
+        "*"
+      ],
+      "origin": "interpretation",
+      "evidence": [
+        {
+          "reference": "mower-body",
+          "aspect": "proportion",
+          "note": "Geniş tabla üstünde daha küçük motor."
+        },
+        {
+          "reference": "hose-grip",
+          "aspect": "proportion",
+          "note": "Baş ile dar tutamak birbirinden ayrılıyor."
+        }
+      ],
+      "rationale": "Stil yeni nesnelere hacim ilişkisi olarak aktarılır; birebir nesne kopyası zorunlu değildir.",
+      "instructions": [
+        "Ana gövde, destek ve kullanılan parçanın göreli boyutlarını planla.",
+        "Tek perspektif kareden görünmeyen ölçüleri kesin bilgi gibi yazma."
+      ],
+      "avoid": [
+        "Teker, menteşe veya tutamağı okunurluk gerekçesiyle keyfî büyütmek."
+      ],
+      "confidence": "medium",
+      "status": "draft"
     },
     {
       "id": "surfaces.materials_differ",
-      "kind": "invariant",
-      "check": "MATERIALS registry (opus_model) + ModelImportTests",
-      "text": "different materials look different; the same paint in another colour is the same material"
-    },
-    {
-      "id": "surfaces.grime",
+      "title": "Malzemeler birbirinden ayrılsın",
+      "text": "Boyalı kapak, kauçuk, ahşap ve metal aynı yüzey gibi görünmesin.",
       "kind": "tunable",
-      "check": "review",
-      "text": "grime only on concrete, brick and stone"
+      "check": "review: ilgili kaynak crop ve model görünüşünü yan yana incele",
+      "enforce": "warn",
+      "aspect": "material",
+      "scope": [
+        "*"
+      ],
+      "origin": "observation",
+      "evidence": [
+        {
+          "reference": "mower-body",
+          "aspect": "material",
+          "note": "Kırmızı kapakla koyu motor farklı yüzeyler."
+        },
+        {
+          "reference": "mower-wheel",
+          "aspect": "material",
+          "note": "Koyu lastik, gövdeye göre farklı tepki veriyor."
+        }
+      ],
+      "rationale": "Nesnenin parçaları yalnızca renkleriyle değil, yüzey tepkileriyle ayrışıyor.",
+      "instructions": [
+        "Renk, yüzey izi ve parlaklığı birlikte değerlendir.",
+        "Malzeme ayrımını aynı ışık altında kontrol et; roughness değerini görüntüden ölçülmüş sayma."
+      ],
+      "avoid": [
+        "Her parçaya aynı plastik parlaklığını vermek."
+      ],
+      "confidence": "medium",
+      "status": "draft"
     },
     {
-      "id": "surfaces.no_baked_light",
-      "kind": "invariant",
-      "check": "review (near miss: baked_shadow)",
-      "text": "no lighting or shadows painted into textures"
+      "id": "detail.hierarchy",
+      "title": "Ayrıntıyı seçerek kullan",
+      "text": "Küçük izler ana şekli desteklesin; bütün yüzeyler eşit yoğunlukta olmasın.",
+      "kind": "tunable",
+      "check": "review: ilgili kaynak crop ve model görünüşünü yan yana incele",
+      "enforce": "warn",
+      "aspect": "detail",
+      "scope": [
+        "*"
+      ],
+      "origin": "interpretation",
+      "evidence": [
+        {
+          "reference": "mower-wheel",
+          "aspect": "detail",
+          "note": "Dişler düzenli ve küçük."
+        },
+        {
+          "reference": "shed-front",
+          "aspect": "detail",
+          "note": "Kaplama çizgileri büyük cephe düzenini bozmuyor."
+        }
+      ],
+      "rationale": "Kaynaklardan alınan yorum; tüm ayrıntılar için tek sayısal sıklık sınırı değildir.",
+      "instructions": [
+        "İşlevi anlatan oluk, birleşim ve tekrarları önce seç.",
+        "Oyun kamerasında kaybolan ayrıntıyı gerekçesi yoksa ekleme."
+      ],
+      "avoid": [
+        "Her yüzeye benzer sıklıkta çizik, oyuk ve kir eklemek."
+      ],
+      "confidence": "medium",
+      "status": "draft"
     },
     {
-      "id": "finish.real_material",
-      "kind": "invariant",
-      "check": "Style.py report (finish_by_kind) + review",
-      "text": "the finish comes from the real material: black plastic matte, enamelled metal glossy, powder coat satin, chrome metallic, rubber and wood matte"
+      "id": "edges.soft_shells",
+      "title": "Kabuğun geçişi yumuşak, ayrımı belirgin",
+      "text": "Alet kapaklarının geniş köşe geçişlerini koru; panel ayrımlarını silme.",
+      "kind": "tunable",
+      "check": "review: ilgili kaynak crop ve model görünüşünü yan yana incele",
+      "enforce": "warn",
+      "aspect": "edges",
+      "scope": [
+        "machine",
+        "held_tool"
+      ],
+      "origin": "observation",
+      "evidence": [
+        {
+          "reference": "mower-body",
+          "aspect": "edges",
+          "note": "Tabla kenarları geniş geçişlerle dönüyor."
+        },
+        {
+          "reference": "trimmer-body",
+          "aspect": "edges",
+          "note": "Kapak köşeleri düz kutu kenarı gibi değil."
+        }
+      ],
+      "rationale": "Görüntü yumuşaklığı milimetre cinsinden pah ölçüsünü kanıtlamaz.",
+      "instructions": [
+        "Gövdeyi önce doğru profil ve köşe eğrisiyle kur; küçük pah son işlemdir.",
+        "Silindirik ve kalıplanmış parçalarda gölge kırılmasını yakın görünüşte denetle."
+      ],
+      "avoid": [
+        "Tek bir bevel değeriyle bütün parçaları aynı biçimde yuvarlatmak."
+      ],
+      "confidence": "medium",
+      "status": "draft"
     },
     {
-      "id": "colour.albedo_gamut",
-      "kind": "invariant",
-      "check": "Style.py report",
-      "text": "base colours inside measured.albedo; outside only with \"style exception: <why>\" in the surface note"
+      "id": "surfaces.painted",
+      "title": "Ahşap ve kabukta sakin yüzey izi",
+      "text": "Ahşap kaplamada yönlü izler, kabukta daha geniş lekeler ve seyrek yarıklar kullan.",
+      "kind": "tunable",
+      "check": "review: ilgili kaynak crop ve model görünüşünü yan yana incele",
+      "enforce": "warn",
+      "aspect": "material",
+      "scope": [
+        "building",
+        "tree",
+        "suspended"
+      ],
+      "origin": "observation",
+      "evidence": [
+        {
+          "reference": "shed-front",
+          "aspect": "material",
+          "note": "Kaplamanın yatay yönü ve yumuşak ton farkları."
+        },
+        {
+          "reference": "tree-trunk",
+          "aspect": "material",
+          "note": "Gövde üzerinde geniş ton bölgeleri."
+        }
+      ],
+      "rationale": "İzlerin varlığı gözleniyor; gerçek doku dosyası veya kullanılan shader bilinmiyor.",
+      "instructions": [
+        "Dokuyu malzemenin yönü ve parçanın ölçeğiyle ilişkilendir.",
+        "Kaynak gölge lekesini renk dokusuna kalıcı olarak kopyalama."
+      ],
+      "avoid": [
+        "Her ahşap parçaya aynı yüksek kontrastlı fotoğraf dokusunu uygulamak."
+      ],
+      "confidence": "medium",
+      "status": "draft",
+      "materials": [
+        "wood",
+        "bark",
+        "painted_wood"
+      ]
+    },
+    {
+      "id": "colour.role_palette",
+      "title": "Rengi kullanım yerine göre dağıt",
+      "text": "Aletlerde belirgin renk vurgusu, binalarda daha sakin yüzeyler görülüyor.",
+      "kind": "tunable",
+      "check": "review: ilgili kaynak crop ve model görünüşünü yan yana incele",
+      "enforce": "warn",
+      "aspect": "colour",
+      "scope": [
+        "machine",
+        "held_tool",
+        "building"
+      ],
+      "origin": "observation",
+      "evidence": [
+        {
+          "reference": "mower-body",
+          "aspect": "colour",
+          "note": "Kırmızı gövde ve koyu üst blok."
+        },
+        {
+          "reference": "shed-front",
+          "aspect": "colour",
+          "note": "Mavi-gri kaplama, krem çerçeve, koyu çatı."
+        }
+      ],
+      "rationale": "Farklı nesnelerin renkleri aynı olabilir diye değil, rollerine göre ele alınıyor.",
+      "instructions": [
+        "Ana yüzey, küçük vurgu ve koyu işlev parçası için ayrı renk rolleri belirle.",
+        "Yeni nesnenin rengini işlev ve malzemesine göre seç; tüm görüntüleri tek palete ortalama."
+      ],
+      "avoid": [
+        "Kırmızı makinenin doygunluğunu bütün binalara taşımak."
+      ],
+      "confidence": "medium",
+      "status": "draft"
     },
     {
       "id": "colour.clean_frames",
+      "title": "Ekran rengini taban renkle karıştırma",
+      "text": "Kaynak pikseli ışık, sis ve çevre etkisini de içerir.",
+      "kind": "tunable",
+      "check": "review: ilgili kaynak crop ve model görünüşünü yan yana incele",
+      "enforce": "warn",
+      "aspect": "colour",
+      "scope": [
+        "*"
+      ],
+      "origin": "interpretation",
+      "evidence": [
+        {
+          "reference": "house-facade",
+          "aspect": "colour",
+          "note": "Açık cephe lavanta çevre ışığı altında."
+        },
+        {
+          "reference": "tree-trunk",
+          "aspect": "colour",
+          "note": "Gövdenin koyu bölgeleri doku veya gölge olabilir."
+        }
+      ],
+      "rationale": "Bu görsellerden malzemenin ışıksız rengi tek başına belirlenemez.",
+      "instructions": [
+        "Görüntüde görülen rengi örnek göster; doğrudan albedo sınırı ilan etme.",
+        "Üretim rengini nötr kontrol ve oyun görünüşüyle birlikte değerlendir."
+      ],
+      "avoid": [
+        "Görüntüden ışık tamamen çıkarılmış gibi kesin renk kodları yazmak."
+      ],
+      "confidence": "medium",
+      "status": "draft"
+    },
+    {
+      "id": "building.rhythm",
+      "title": "Mimaride büyük ve küçük tekrarları ayır",
+      "text": "Önce çatı/cephe düzeni, sonra pencere ve kaplama ritmi okunmalı.",
+      "kind": "tunable",
+      "check": "review: ilgili kaynak crop ve model görünüşünü yan yana incele",
+      "enforce": "warn",
+      "aspect": "detail",
+      "scope": [
+        "building"
+      ],
+      "origin": "observation",
+      "evidence": [
+        {
+          "reference": "house-facade",
+          "aspect": "detail",
+          "note": "Tekrar eden pencereler ve yatay çizgiler."
+        },
+        {
+          "reference": "shed-front",
+          "aspect": "detail",
+          "note": "Daha az elemanla aynı okunur cephe düzeni."
+        }
+      ],
+      "rationale": "Aynı stil içindeki ev ve kulübenin ayrıntı sayısı farklı olabilir.",
+      "instructions": [
+        "Pencere, kapı ve çatı uzantılarını büyük kütleye göre yerleştir.",
+        "Tahta ve kiremit sıklığını bina ölçeğine göre seç; trim genişliğini yakın görünüşte kontrol et."
+      ],
+      "avoid": [
+        "Kaplama detayının kapı ve pencere siluetini bastırması."
+      ],
+      "confidence": "medium",
+      "status": "draft"
+    },
+    {
+      "id": "organic.trunk",
+      "title": "Gövde yere otursun",
+      "text": "Gövdenin genişleyen tabanı ve kök çıkışları ana siluetin parçası olsun.",
+      "kind": "tunable",
+      "check": "review: ilgili kaynak crop ve model görünüşünü yan yana incele",
+      "enforce": "warn",
+      "aspect": "shape",
+      "scope": [
+        "tree",
+        "suspended"
+      ],
+      "origin": "observation",
+      "evidence": [
+        {
+          "reference": "tree-trunk",
+          "aspect": "shape",
+          "note": "Kök çıkıntıları gövdeyi zemine bağlıyor."
+        }
+      ],
+      "rationale": "Mevcut crop yalnızca gövde ve taban için yeterli kanıt sağlıyor.",
+      "instructions": [
+        "Düz silindir yerine ana eğim, taban genişlemesi ve az sayıda güçlü kök geçişi kur.",
+        "Taç/dal tasarımını bu crop ile doğrulanmış sayma; yeterli kaynak geldiğinde ayrı değerlendir."
+      ],
+      "avoid": [
+        "Yere saplanmış sabit kalınlıklı boru gibi gövde."
+      ],
+      "confidence": "medium",
+      "status": "draft"
+    },
+    {
+      "id": "held_tool.grip",
+      "title": "Tutulan ve çalışan parçalar ayrı okunsun",
+      "text": "Tutamak, ayar ve çalışan başın hacim görevleri karışmasın.",
+      "kind": "tunable",
+      "check": "review: ilgili kaynak crop ve model görünüşünü yan yana incele",
+      "enforce": "warn",
+      "aspect": "proportion",
+      "scope": [
+        "held_tool"
+      ],
+      "origin": "interpretation",
+      "evidence": [
+        {
+          "reference": "hose-grip",
+          "aspect": "proportion",
+          "note": "Baş, tutamak ve düğme ayrımı."
+        },
+        {
+          "reference": "trimmer-body",
+          "aspect": "proportion",
+          "note": "Ana gövde ve halka tutamak ayrımı."
+        }
+      ],
+      "rationale": "İki alet farklı biçimde olsa da hacimlerin görevleri anlaşılabiliyor.",
+      "instructions": [
+        "Oyuncu bakışında kavrama yeri ve çalışan ucun yönünü koru.",
+        "Bağlantı ve hareket ayrıntısını model planında açıkla; görünmeyen mekanizma tahminini işaretle."
+      ],
+      "avoid": [
+        "Okunurluk için tutamağı kullanılamayacak kadar kalınlaştırmak."
+      ],
+      "confidence": "medium",
+      "status": "draft"
+    },
+    {
+      "id": "shape.one_shell",
+      "title": "Parçanın yapısını açık kur",
+      "text": "Her fiziksel parçanın sınırı, bağlantısı ve görevi belli olsun.",
+      "kind": "tunable",
+      "check": "qc.construction + review",
+      "enforce": "warn",
+      "aspect": "construction",
+      "scope": [
+        "*"
+      ],
+      "origin": "technical",
+      "evidence": [],
+      "decision": "Önceki Copycat Opus üretim hattından devralınan teknik tercih; görsellerden ölçülmedi ve bu kılavuz için kullanıcı onayı varsayılmadı.",
+      "rationale": "Stil gözlemi değil; mevcut üretimle uyumluluk için görünür tutulan geçici tercih.",
+      "instructions": [
+        "Bir parça için üst üste örtüşen rastgele katı yığınları kurma; bağlantıyı planla."
+      ],
+      "avoid": [],
+      "confidence": "medium",
+      "status": "draft"
+    },
+    {
+      "id": "surfaces.no_baked_light",
+      "title": "Yönlü ışığı dokuya sabitleme",
+      "text": "Renk dokusuna kalıcı yönlü ışık veya geniş gölge boyama.",
       "kind": "tunable",
       "check": "review",
-      "text": "colours are sampled from clean frames; the lavender sky light tints greys, so base colours are shifted against it"
+      "enforce": "warn",
+      "aspect": "material",
+      "scope": [
+        "*"
+      ],
+      "origin": "technical",
+      "evidence": [],
+      "decision": "Önceki Copycat Opus üretim hattından devralınan teknik tercih; görsellerden ölçülmedi ve bu kılavuz için kullanıcı onayı varsayılmadı.",
+      "rationale": "Stil gözlemi değil; mevcut üretimle uyumluluk için görünür tutulan geçici tercih.",
+      "instructions": [
+        "Malzeme rengiyle aydınlatmayı ayır; mevcut AO kullanımını ayrı teknik kanal olarak değerlendir."
+      ],
+      "avoid": [],
+      "confidence": "medium",
+      "status": "draft"
     },
     {
-      "id": "colour.atmosphere",
-      "kind": "invariant",
-      "check": "Style.py shots (game shot against its reference) + look",
-      "text": "a pastel, hazy atmosphere; mown grass lighter and brighter than unmown; no saturated sharp borders",
-      "enforce": "warn"
-    },
-    {
-      "id": "detail.guesses_simple",
+      "id": "edges.chamfer",
+      "title": "Eski pah aralığı: geçici teknik tercih",
+      "text": "Mevcut 1–2,5 mm aralığı otomatik stil kanıtı değildir.",
       "kind": "tunable",
-      "check": "plan (source guess) + review",
-      "text": "what the camera cannot see stays simple and is marked as a guess"
+      "check": "Style.py report (bevels_mm; warning) + review",
+      "enforce": "warn",
+      "aspect": "edges",
+      "scope": [
+        "machine",
+        "held_tool"
+      ],
+      "origin": "technical",
+      "evidence": [],
+      "decision": "Önceki Copycat Opus üretim hattından devralınan teknik tercih; görsellerden ölçülmedi ve bu kılavuz için kullanıcı onayı varsayılmadı.",
+      "rationale": "Stil gözlemi değil; mevcut üretimle uyumluluk için görünür tutulan geçici tercih.",
+      "instructions": [
+        "Aralık dışı sonucu uyarı olarak incele; referansta aynı pah ölçüldü diye sunma."
+      ],
+      "avoid": [],
+      "confidence": "medium",
+      "status": "draft"
+    },
+    {
+      "id": "finish.real_material",
+      "title": "Eski yüzey tablosu: geçici teknik tercih",
+      "text": "finish_by_kind tablosu mevcut üretim varsayımlarını kaydeder.",
+      "kind": "tunable",
+      "check": "Style.py report (finish_by_kind; warning)",
+      "enforce": "warn",
+      "aspect": "material",
+      "scope": [
+        "*"
+      ],
+      "origin": "technical",
+      "evidence": [],
+      "decision": "Önceki Copycat Opus üretim hattından devralınan teknik tercih; görsellerden ölçülmedi ve bu kılavuz için kullanıcı onayı varsayılmadı.",
+      "rationale": "Stil gözlemi değil; mevcut üretimle uyumluluk için görünür tutulan geçici tercih.",
+      "instructions": [
+        "Malzeme tablosu ile görünen sonuç çelişirse farkı kaydet; tabloyu otomatik görsel doğruluk sayma."
+      ],
+      "avoid": [],
+      "confidence": "medium",
+      "status": "draft"
     },
     {
       "id": "detail.floor",
+      "title": "Eski detay tabanı: kamera ile denetle",
+      "text": "Sınıf tabanları elde taşınan alette 3 mm, prop için 10 mm, binada 20 mm olarak devralındı.",
       "kind": "tunable",
       "check": "review",
-      "text": "nothing modelled below stylisation.detail_floor_m for its class"
+      "enforce": "warn",
+      "aspect": "detail",
+      "scope": [
+        "*"
+      ],
+      "origin": "technical",
+      "evidence": [],
+      "decision": "Önceki Copycat Opus üretim hattından devralınan teknik tercih; görsellerden ölçülmedi ve bu kılavuz için kullanıcı onayı varsayılmadı.",
+      "rationale": "Stil gözlemi değil; mevcut üretimle uyumluluk için görünür tutulan geçici tercih.",
+      "instructions": [
+        "Diğer sınıflara fallback uygulandığını açıkla; ekran boyutuna bakmadan küçük ayrıntıyı zorunlu yasak yapma."
+      ],
+      "avoid": [],
+      "confidence": "medium",
+      "status": "draft"
     },
     {
       "id": "detail.budgets",
+      "title": "Üçgen bütçesi görsel stil değildir",
+      "text": "stylisation.budgets_tris mevcut teknik bütçeleri saklar.",
       "kind": "tunable",
-      "check": "Style.py report (stylisation.budgets_tris)",
-      "text": "triangles within stylisation.budgets_tris for the asset's class",
-      "enforce": "warn"
+      "check": "Style.py report (stylisation.budgets_tris; warning)",
+      "enforce": "warn",
+      "aspect": "budget",
+      "scope": [
+        "*"
+      ],
+      "origin": "technical",
+      "evidence": [],
+      "decision": "Önceki Copycat Opus üretim hattından devralınan teknik tercih; görsellerden ölçülmedi ve bu kılavuz için kullanıcı onayı varsayılmadı.",
+      "rationale": "Stil gözlemi değil; mevcut üretimle uyumluluk için görünür tutulan geçici tercih.",
+      "instructions": [
+        "Üst sınırı aşan modeli maliyetiyle değerlendir; sırf bütçeden geçmesi stile uyduğu anlamına gelmez."
+      ],
+      "avoid": [],
+      "confidence": "medium",
+      "status": "draft"
+    },
+    {
+      "id": "detail.guesses_simple",
+      "title": "Görünmeyen bilgi tahmin olarak kalsın",
+      "text": "Referansın göstermediği ayrıntıları plan içinde tahmin diye işaretle.",
+      "kind": "tunable",
+      "check": "plan (source guess) + review",
+      "enforce": "warn",
+      "aspect": "construction",
+      "scope": [
+        "*"
+      ],
+      "origin": "technical",
+      "evidence": [],
+      "decision": "Önceki Copycat Opus üretim hattından devralınan teknik tercih; görsellerden ölçülmedi ve bu kılavuz için kullanıcı onayı varsayılmadı.",
+      "rationale": "Stil gözlemi değil; mevcut üretimle uyumluluk için görünür tutulan geçici tercih.",
+      "instructions": [
+        "Tahmini işlev ve bağlantıyla sınırla; görsel gözlem diye kaydetme."
+      ],
+      "avoid": [],
+      "confidence": "medium",
+      "status": "draft"
+    },
+    {
+      "id": "colour.albedo_gamut",
+      "title": "Eski modelden türetilen renk kapısı",
+      "text": "Kendi modellerinden çıkarılan zarf hedef görsellerin stilini kanıtlamadığı için emekliye ayrıldı.",
+      "kind": "tunable",
+      "check": "retired",
+      "enforce": "warn",
+      "aspect": "colour",
+      "scope": [
+        "*"
+      ],
+      "origin": "technical",
+      "evidence": [],
+      "decision": "Önceki Copycat Opus üretim hattından devralınan teknik tercih; görsellerden ölçülmedi ve bu kılavuz için kullanıcı onayı varsayılmadı.",
+      "rationale": "Stil gözlemi değil; mevcut üretimle uyumluluk için görünür tutulan geçici tercih.",
+      "instructions": [],
+      "avoid": [],
+      "confidence": "medium",
+      "status": "retired"
+    },
+    {
+      "id": "colour.atmosphere",
+      "title": "Oyun atmosferi eşleştirmesi",
+      "text": "Işık ve post işleme eşleştirmesi bu 3D asset kılavuzunun kapsamı dışında.",
+      "kind": "tunable",
+      "check": "retired",
+      "enforce": "warn",
+      "aspect": "context",
+      "scope": [
+        "*"
+      ],
+      "origin": "technical",
+      "evidence": [],
+      "decision": "Önceki Copycat Opus üretim hattından devralınan teknik tercih; görsellerden ölçülmedi ve bu kılavuz için kullanıcı onayı varsayılmadı.",
+      "rationale": "Stil gözlemi değil; mevcut üretimle uyumluluk için görünür tutulan geçici tercih.",
+      "instructions": [],
+      "avoid": [],
+      "confidence": "medium",
+      "status": "retired"
     }
   ],
   "lookdev": {
@@ -248,76 +731,7 @@
       "tree"
     ]
   },
-  "near_misses": [
-    {
-      "variant": "glossy_plastic",
-      "rule": "surfaces.painted",
-      "what": "flat colour and a mirror finish: it reads as cheap plastic, not as a painted, grained surface"
-    },
-    {
-      "variant": "oversaturated",
-      "rule": "colour.albedo_gamut",
-      "what": "the base colours pushed past the palette's chroma: loud against the hazy pastel frames"
-    },
-    {
-      "variant": "baked_shadow",
-      "rule": "surfaces.no_baked_light",
-      "what": "a shadow gradient painted into the colour: it stays dark whatever the light does"
-    },
-    {
-      "variant": "black_shadows",
-      "rule": "colour.atmosphere",
-      "what": "no sky light: neutral black shadows instead of the lavender-tinted ones of the source"
-    }
-  ],
-  "in_game": {
-    "pairs": [
-      {
-        "label": "Shed",
-        "reference": "docs/reference/28_shed_front.png",
-        "game": "Builds/Shots/u16_showroom/v_shed_video_angle.png"
-      },
-      {
-        "label": "House",
-        "reference": "docs/reference/29_house_garden_facade.png",
-        "game": "Builds/Shots/u16_showroom/v_house_video_angle.png"
-      },
-      {
-        "label": "Tire swing",
-        "reference": "docs/reference/27_tree_swing.png",
-        "game": "Builds/Shots/u16_showroom/v_swing_video_angle.png"
-      },
-      {
-        "label": "Mower (first person)",
-        "reference": "docs/reference/22_mower_close.png",
-        "game": "Builds/Shots/u16_showroom/v_fps_mower.png"
-      },
-      {
-        "label": "Hose nozzle (first person)",
-        "reference": "docs/reference/24_hose_nozzle.png",
-        "game": "Builds/Shots/u16_showroom/v_fps_hose.png"
-      },
-      {
-        "label": "Trimmer (first person)",
-        "reference": "docs/reference/26_trimmer_body.png",
-        "game": "Builds/Shots/u16_showroom/v_fps_trimmer.png"
-      }
-    ]
-  },
-  "notes": {
-    "vision": "The yard of the trailer is a place you want to spend a summer in: warm, slightly worn, never busy. Every object is a little simpler and softer than the real one, but built the way the real one is built, so it reads instantly and still feels true. When two goals fight, the game camera decides: if it does not read from where the player stands, it is wrong however accurate it is.",
-    "value": "Most of every picture lives in the middle values, with a light sky and light walls on top and only small dark accents (iron, rubber, tyre, deep shadow under eaves). Keep big shapes in one value group each; a model that breaks into many small light-dark patches reads as noise from the game camera.",
-    "colour": "Colours are soft and warm, a little greyed, with the haze of a summer afternoon. Saturation is spent on a few accents only: the red mower, the green and yellow nozzle. Base colours are painted a touch darker and more saturated than they look on screen, because the lavender sky light and the haze lift and soften them.",
-    "hue": "The yard is green and yellow-green, the buildings grey-blue and white, the accents red. New colours join one of these families; a colour from outside them (a neon, a cold cyan) needs a reason.",
-    "light": "Light is warm and shadows are cool and coloured, never neutral black: the lavender sky fills every shadow. Nothing is painted into a texture that the light should do: no baked highlights, no painted shadows.",
-    "detail": "Large calm surfaces with detail where it explains the object: board lines, a hinge, a tread block. Below the detail floor a feature is painted or left out. The spectrum of the sources is calmer than a photograph (a steeper Fourier slope), so a model with fine noise everywhere is off-style even if each piece is right.",
-    "shape": "Simple, slightly rounded, readable forms; one solid piece for one real piece. A silhouette at 32 px must still say what the object is.",
-    "materials": "The finish comes from what the thing is made of: matte for wood, rubber and rough plastic, satin for paint and powder coat, glossy only for enamel and glass. A real grain lies under the paint; every board and shingle is a touch different in tone.",
-    "classes": "Each class has its own detail floor and budget: what a hand holds in first person is seen up close and gets its small parts; a building is seen from metres away and gets its boards, not its nails.",
-    "do_dont": "Each pair shows the style beside a near miss of the same model: the mistakes a generator makes easily. Every near miss names the rule it breaks and the check that catches it; the numbers below each one say what the measured checks see, and where only the review can see it, the page says so.",
-    "in_game": "The trailer's frame beside the same view in the game: the final test of the style is here, under the game's own light and shader."
-  },
-  "measured": {
+  "legacy_measured": {
     "settings": {
       "colour": "CIELAB D65 (gamut, value), OKLab (hue)",
       "detail_resize": "Pillow BICUBIC, 256 px long side"
@@ -1626,20 +2040,175 @@
       ]
     }
   },
-  "history": [
-    {
-      "date": "2026-10-23",
-      "change": "first style spec: measured from the trailer's reference crops and the 8 built models; rules from the project's modelling rules"
-    },
-    {
-      "date": "2026-10-23",
-      "version": "1.1",
-      "change": "schema 2: rules with ids, kind (invariant/tunable) and the check that enforces each; stylisation parameters (anchor, tie-breaker, detail floor, chamfer band, budgets)"
-    },
-    {
-      "date": "2026-10-24",
-      "version": "1.1",
-      "change": "checks, no change to the look: finish by kind, class budgets and chamfers in Style.py report (budgets and chamfers report only until the user decides on the assets they flag); game shots against their reference frames (Style.py shots, report only); near misses in the review"
+  "legacy": {
+    "status": "archived",
+    "note": "Önceki ölçüm ve belge verisi. Hedef stili veya güncel onayı tanımlamaz.",
+    "data": {
+      "notes": {
+        "vision": "The yard of the trailer is a place you want to spend a summer in: warm, slightly worn, never busy. Every object is a little simpler and softer than the real one, but built the way the real one is built, so it reads instantly and still feels true. When two goals fight, the game camera decides: if it does not read from where the player stands, it is wrong however accurate it is.",
+        "value": "Most of every picture lives in the middle values, with a light sky and light walls on top and only small dark accents (iron, rubber, tyre, deep shadow under eaves). Keep big shapes in one value group each; a model that breaks into many small light-dark patches reads as noise from the game camera.",
+        "colour": "Colours are soft and warm, a little greyed, with the haze of a summer afternoon. Saturation is spent on a few accents only: the red mower, the green and yellow nozzle. Base colours are painted a touch darker and more saturated than they look on screen, because the lavender sky light and the haze lift and soften them.",
+        "hue": "The yard is green and yellow-green, the buildings grey-blue and white, the accents red. New colours join one of these families; a colour from outside them (a neon, a cold cyan) needs a reason.",
+        "light": "Light is warm and shadows are cool and coloured, never neutral black: the lavender sky fills every shadow. Nothing is painted into a texture that the light should do: no baked highlights, no painted shadows.",
+        "detail": "Large calm surfaces with detail where it explains the object: board lines, a hinge, a tread block. Below the detail floor a feature is painted or left out. The spectrum of the sources is calmer than a photograph (a steeper Fourier slope), so a model with fine noise everywhere is off-style even if each piece is right.",
+        "shape": "Simple, slightly rounded, readable forms; one solid piece for one real piece. A silhouette at 32 px must still say what the object is.",
+        "materials": "The finish comes from what the thing is made of: matte for wood, rubber and rough plastic, satin for paint and powder coat, glossy only for enamel and glass. A real grain lies under the paint; every board and shingle is a touch different in tone.",
+        "classes": "Each class has its own detail floor and budget: what a hand holds in first person is seen up close and gets its small parts; a building is seen from metres away and gets its boards, not its nails.",
+        "do_dont": "Each pair shows the style beside a near miss of the same model: the mistakes a generator makes easily. Every near miss names the rule it breaks and the check that catches it; the numbers below each one say what the measured checks see, and where only the review can see it, the page says so.",
+        "in_game": "The trailer's frame beside the same view in the game: the final test of the style is here, under the game's own light and shader."
+      },
+      "in_game": {
+        "pairs": [
+          {
+            "label": "Shed",
+            "reference": "docs/reference/28_shed_front.png",
+            "game": "Builds/Shots/u16_showroom/v_shed_video_angle.png"
+          },
+          {
+            "label": "House",
+            "reference": "docs/reference/29_house_garden_facade.png",
+            "game": "Builds/Shots/u16_showroom/v_house_video_angle.png"
+          },
+          {
+            "label": "Tire swing",
+            "reference": "docs/reference/27_tree_swing.png",
+            "game": "Builds/Shots/u16_showroom/v_swing_video_angle.png"
+          },
+          {
+            "label": "Mower (first person)",
+            "reference": "docs/reference/22_mower_close.png",
+            "game": "Builds/Shots/u16_showroom/v_fps_mower.png"
+          },
+          {
+            "label": "Hose nozzle (first person)",
+            "reference": "docs/reference/24_hose_nozzle.png",
+            "game": "Builds/Shots/u16_showroom/v_fps_hose.png"
+          },
+          {
+            "label": "Trimmer (first person)",
+            "reference": "docs/reference/26_trimmer_body.png",
+            "game": "Builds/Shots/u16_showroom/v_fps_trimmer.png"
+          }
+        ]
+      },
+      "heroes": [
+        "shed",
+        "mower"
+      ],
+      "near_misses": [
+        {
+          "variant": "glossy_plastic",
+          "rule": "surfaces.painted",
+          "what": "flat colour and a mirror finish: it reads as cheap plastic, not as a painted, grained surface"
+        },
+        {
+          "variant": "oversaturated",
+          "rule": "colour.albedo_gamut",
+          "what": "the base colours pushed past the palette's chroma: loud against the hazy pastel frames"
+        },
+        {
+          "variant": "baked_shadow",
+          "rule": "surfaces.no_baked_light",
+          "what": "a shadow gradient painted into the colour: it stays dark whatever the light does"
+        },
+        {
+          "variant": "black_shadows",
+          "rule": "colour.atmosphere",
+          "what": "no sky light: neutral black shadows instead of the lavender-tinted ones of the source"
+        }
+      ],
+      "history": [
+        {
+          "date": "2026-10-23",
+          "change": "first style spec: measured from the trailer's reference crops and the 8 built models; rules from the project's modelling rules"
+        },
+        {
+          "date": "2026-10-23",
+          "version": "1.1",
+          "change": "schema 2: rules with ids, kind (invariant/tunable) and the check that enforces each; stylisation parameters (anchor, tie-breaker, detail floor, chamfer band, budgets)"
+        },
+        {
+          "date": "2026-10-24",
+          "version": "1.1",
+          "change": "checks, no change to the look: finish by kind, class budgets and chamfers in Style.py report (budgets and chamfers report only until the user decides on the assets they flag); game shots against their reference frames (Style.py shots, report only); near misses in the review"
+        }
+      ]
     }
-  ]
+  },
+  "technical_provenance": {
+    "status": "legacy_advisory",
+    "fields": [
+      "stylisation",
+      "classes",
+      "finish_by_kind"
+    ],
+    "origin": "technical",
+    "note": "Sınıflar ve sayısal üretim tercihleri eski hatla uyumluluk için korundu; kaynak görüntülerden ölçülmedi. Stil kabulü olarak kullanılamaz."
+  },
+  "guideline": {
+    "revision": 1,
+    "status": "draft",
+    "overview": [
+      "Bu taslak, mevcut trailer içinden seçilen yedi görüntünün dokuz crop’una dayanır. Farklı oyunlardan yeni referans eklenebilir; her görsel yalnızca kendisine atanmış özellikler için kanıt olur.",
+      "Görsel dilin başlangıç önerisi: nesneyi tanıtan büyük kütleler, işlevi anlaşılır parçalar ve malzemeye göre seçilmiş yüzey izleri. Makinelerin renk vurgusu ile binaların sakin renklerini tek bir ortalama palete çevirmiyoruz.",
+      "Gözlem, yorum ve teknik tercih ayrı kaydedilir. Bu belge kullanıcı tarafından onaylanmış bir stil ilan etmez; model ve geribildirim üzerinden kapsamı belli değişikliklerle gelişir."
+    ],
+    "uncertainties": [
+      "Referansların tamamı aynı trailer’dan geliyor; farklı oyunlar arasında ortak stil henüz değerlendirilmedi.",
+      "Taç/yaprak düzeni, görünmeyen mekanizmalar ve tam ölçek için mevcut crop’lar yeterli değil.",
+      "Ekran renkleri ışık ve sis içeriyor; bu görüntülerden albedo veya roughness kesin olarak çıkarılmadı.",
+      "Üçgen bütçesi, pah milimetresi ve detay tabanı önceki hattın teknik tercihleri; görsel gözlem veya kullanıcı onayı değil."
+    ],
+    "cost": {
+      "max_reference_images": 3,
+      "max_brief_chars": 7000
+    },
+    "examples": [
+      {
+        "id": "mower-baseline",
+        "model": "mower",
+        "asset": "856e2578b690e5e7",
+        "image": "docs/style/examples/mower_game.jpg",
+        "sha256": "5d28a4bc3a9373a298bf35f028059a89ae91ac9e92bd5eca964fa35d6d73e66e",
+        "scope": [
+          "machine"
+        ],
+        "status": "baseline",
+        "note": "Mevcut oyundaki montajı gösteren başlangıç örneği; stil onayı değil. Yeniden render alınmadı; görüntünün build sürümü ile güncel asset eşleşmesi doğrulanmadı.",
+        "source_image": "Builds/Shots/u16_showroom/v_mower_front_right.png"
+      },
+      {
+        "id": "shed-baseline",
+        "model": "shed",
+        "asset": "385110a2ebed07fb",
+        "image": "docs/style/examples/shed_game.jpg",
+        "sha256": "05a7939ec55e870d1ffab89051d4c17656c5ce67206327d4673797d377043769",
+        "scope": [
+          "building"
+        ],
+        "status": "baseline",
+        "note": "Mevcut oyundaki montajı gösteren başlangıç örneği; stil onayı değil. Yeniden render alınmadı; görüntünün build sürümü ile güncel asset eşleşmesi doğrulanmadı.",
+        "source_image": "Builds/Shots/u16_showroom/v_shed_front_right.png"
+      },
+      {
+        "id": "tree-baseline",
+        "model": "tree",
+        "asset": "2be022fc6856a532",
+        "image": "docs/style/examples/tree_game.jpg",
+        "sha256": "04e9c000708ef1ae06413a6b2307b71a00bce4328b57fddf0ec60af4b9ba6ec7",
+        "scope": [
+          "tree"
+        ],
+        "status": "baseline",
+        "note": "Mevcut oyundaki montajı gösteren başlangıç örneği; stil onayı değil. Yeniden render alınmadı; görüntünün build sürümü ile güncel asset eşleşmesi doğrulanmadı.",
+        "source_image": "Builds/Shots/u16_showroom/v_tree_front_right.png"
+      }
+    ],
+    "history": [
+      {
+        "date": "2026-10-24",
+        "reason": "Mevcut referanslar tek kez görsel olarak incelendi; kaynaklı Türkçe taslak, sınıfa göre brief ve onaysız başlangıç örnekleri için schema 3 hazırlandı. Otomatik stil/albedo çıkarımı yapılmadı."
+      }
+    ]
+  }
 }

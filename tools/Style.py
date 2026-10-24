@@ -1,32 +1,13 @@
-"""
-The art style as data, measured from the images that show it and enforced on every new asset (the user, 23 October 2026:
-"a process to make an art style and make the next assets full of this style", then "detailed, advanced, researched";
-reports/Oyun art stili tanımlama ve denetim.md, steps 1-4; skill .claude/skills/art-style).
+"""Reference-driven 3D asset guidelines for Copycat Opus.
 
-The style is tools/blender/style/style.json (schema 2):
-- rules: each with an id, a kind (invariant: changing it is a new style; tunable: adjusted within the style) and the check
-  that enforces it (a gate, a test, or "review"); `validate` refuses a rule without one;
-- stylisation: anchor, tie-breaker, what is modelled versus painted, detail floors, chamfer band, triangle budgets;
-- measured.lit: the style's sources as seen on screen, five axes per image (colour, value, hue, light, detail), stored as
-  median and IQR over the images, plus palettes; measured.albedo: base colours of the models that define the style;
-- history and style_version: every change, dated.
+Schema 3 uses StyleGuide.py for the AI guide, visual report, scoped briefs and informational
+per-image measurements. Technical checks and asset review state do not certify visual style.
+Legacy schema-2 colour helpers remain for compatibility; their metrics are not validated style gates.
 
-Usage:
-  py -3 tools/Style.py extract [IMAGE ...]   measure the sources (the generators' reference crops, or the images given) and
-                                             the defining models; keeps rules and stylisation; leave-one-out coverage
-  py -3 tools/Style.py report [MODEL ...] [--json]   models' base colours against measured.albedo (Verify runs it)
-  py -3 tools/Style.py validate              schema check: every rule has an id, a kind and a check
-  py -3 tools/Style.py bible                 Builds/Style/art_bible.html: the style as a visual document, generated from
-                                             style.json, the measurements, the sources and the look-dev renders
-Measurement discipline: one resize (Pillow BICUBIC to 256 px on the long side for detail measures), CIELAB (D65) for gamut
-and value, OKLab/OKLCh for hue; numbers from different settings are never compared.
+Commands: bible; brief NAME [--class CLASS]; extract [IMAGE ...]; report [MODEL ...] [--json]; validate.
 """
 import argparse
-import base64
-import datetime
 import glob
-import html
-import io
 import json
 import math
 import os
@@ -34,7 +15,7 @@ import re
 import sys
 
 import numpy as np
-from PIL import Image, ImageDraw, ImageFilter, ImageFont
+from PIL import Image, ImageDraw, ImageFont
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 STYLE = os.path.join(ROOT, "tools", "blender", "style", "style.json")
@@ -387,7 +368,10 @@ def save_style(style):
 
 
 def validate(style):
-    """Schema 2: every rule has an id, a kind and a check (a gate or "review"); ids are unique."""
+    """Validate the current project guide, or a legacy schema-2 rules document."""
+    if style.get("schema", 2) >= 3:
+        import StyleGuide
+        return StyleGuide.validate_project(ROOT)
     problems = []
     ids = [r.get("id") for r in style.get("rules", [])]
     for r in style.get("rules", []):
@@ -417,6 +401,11 @@ def validate(style):
 
 def extract(images):
     style = load_style()
+    if style.get("schema", 2) >= 3:
+        import StyleGuide
+        result = StyleGuide.measure(ROOT, images or None)
+        print("Measurements are informational per-image observations; guide rules were not changed.")
+        return result
     problems = validate(style)
     if problems:
         sys.exit("style.json: " + "; ".join(problems))
@@ -502,6 +491,9 @@ def board(style, thumbs):
 
 def check(model, style):
     """One model's base colours against the albedo envelope: (problems, nearest palette distance, atlas stats)."""
+    if style.get("schema", 2) >= 3:
+        # A lit screenshot does not define unlit albedo limits. Document revisions also do not invalidate meshes.
+        return [], None, None
     g = style["measured"]["albedo"]["gamut"]
     lo, hi, cmax = g["lightness"][0], g["lightness"][1], g["chroma_max"]
     palette = np.array([p["lab"] for p in style["measured"]["albedo"]["palette"]])
@@ -554,7 +546,7 @@ def rules_check(model, style):
     becomes "error" once its near misses prove it and the user has decided what to do with the assets it flags (the
     research report, step 6).
     - finish.real_material: the finish by kind (style.finish_by_kind): a Rubber surface "glossy", a Glass one "matte" ...;
-    - detail.budgets: triangles against the class budget (stylisation.budgets_tris); below the minimum only warns;
+    - detail.budgets: upper triangle limits only; a low polygon count is not a style defect;
     - edges.chamfer: for the classes in chamfer_applies_to, a hard part without a chamfer or outside stylisation.chamfer_mm."""
     s = spec(model)
     found = []   # (rule id, message)
@@ -574,19 +566,21 @@ def rules_check(model, style):
     if budget:
         if tris > budget[1]:
             found.append(("detail.budgets", f"{tris:,} triangles, above the {cls} budget {budget[1]:,}"))
-        elif tris < budget[0]:
-            warnings.append(f"{tris:,} triangles, below the {cls} budget {budget[0]:,} (too coarse for its class?)")
     if cls in st.get("chamfer_applies_to", []):
         band = st.get("chamfer_mm", {}).get("hard_parts")
         skip = {o["name"] for o in s.get("objects", []) if o.get("foliage")} | set(s.get("unchamfered") or {})
         for part, width in (s.get("bevels_mm") or {}).items():
             if part in skip:   # leaves, and parts the generator leaves unchamfered on purpose (part(no_chamfer=why))
                 continue
-            if width is None:
+            if width is None and band:
                 found.append(("edges.chamfer", f"{part}: no chamfer (hard parts of a {cls} get {band[0]}-{band[1]} mm)"))
             elif band and not band[0] <= width <= band[1]:
                 found.append(("edges.chamfer", f"{part}: chamfer {width} mm outside {band[0]}-{band[1]} mm"))
-    enforce = {r["id"]: r.get("enforce", "error") for r in style.get("rules", [])}
+    rules = {r["id"]: r for r in style.get("rules", []) if r.get("status") != "retired"}
+    found = [(rule, text) for rule, text in found if rule in rules]
+    enforce = {rid: ("error" if r.get("origin") == "technical" and r.get("status") == "active"
+                    and r.get("enforce") == "error" else "warn")
+               if style.get("schema", 2) >= 3 else r.get("enforce", "error") for rid, r in rules.items()}
     problems = [f"{rule}: {text}" for rule, text in found if enforce.get(rule, "error") == "error"]
     warnings += [f"{rule}: {text}" for rule, text in found if enforce.get(rule, "error") == "warn"]
     return problems, warnings, {"class": cls, "triangles": tris}
@@ -597,7 +591,8 @@ def report(models, as_json):
     if problems:
         print("style.json: " + "; ".join(problems))
         return 1
-    if "albedo" not in style.get("measured", {}):
+    guide = style.get("schema", 2) >= 3
+    if not guide and "albedo" not in style.get("measured", {}):
         sys.exit("no measured style: run py -3 tools/Style.py extract first")
     results = {}
     for model in [m for m in built_models() if not models or m in models]:
@@ -609,10 +604,25 @@ def report(models, as_json):
         rule_problems, warnings, info = rules_check(model, style)
         results[model] = {"outside": problems + rule_problems, "warnings": warnings, "palette_distance_max": distance,
                           "atlas": atlas, **info}
+        if guide:
+            import Review
+            original_root = Review.ROOT
+            try:
+                Review.ROOT = ROOT
+                results[model]["asset_review"] = Review.state(model)
+            finally:
+                Review.ROOT = original_root
+            results[model]["visual_style"] = "not assessed by numeric checks"
     if as_json:
         print(json.dumps(results))
     else:
         for model, r in results.items():
+            if guide:
+                print(f"{model:12} {'ok' if not r['outside'] else 'FAIL'}  technical rules; "
+                      f"asset review: {r['asset_review']['text']}; visual style: {r['visual_style']}"
+                      + "".join(f"\n    {o}" for o in r["outside"])
+                      + "".join(f"\n    warning: {w}" for w in r["warnings"]))
+                continue
             print(f"{model:12} {'ok' if not r['outside'] else 'OUTSIDE'}  farthest surface from the palette "
                   f"{r['palette_distance_max']}" + (f", atlas chroma p99 {r['atlas']['chroma_p99']}" if r["atlas"] else "")
                   + "".join(f"\n    {o}" for o in r["outside"]) + "".join(f"\n    warning: {w}" for w in r["warnings"]))
@@ -646,36 +656,15 @@ def pair_check(game, reference, prof):
     return axes, outside, g, r
 
 
-def game_shots(style):
-    """The game's shots of the style's pairs (style.in_game.pairs): each against its own reference frame, both measured
-    at the same size (pair_check). Warn-only: the light-aware check of colour.atmosphere (the research report, step 5);
-    it says where the game's light and post-processing move the picture away from the source, not which asset is wrong."""
-    prof = style["measured"]["lit"]["profile"]
-    rows = []
-    for pair in style.get("in_game", {}).get("pairs", []):
-        game, ref = os.path.join(ROOT, pair["game"]), os.path.join(ROOT, pair["reference"])
-        missing = [p for p, full in ((pair["game"], game), (pair["reference"], ref)) if not os.path.exists(full)]
-        if missing:
-            rows.append({"label": pair["label"], "missing": missing})
-            continue
-        axes, outside, g, r = pair_check(_pair_image(game), _pair_image(ref), prof)
-        rows.append({"label": pair["label"], "game": pair["game"], "reference": pair["reference"], "outside": outside,
-                     "axes": axes, "game_shadow": g["shadow_colour"], "reference_shadow": r["shadow_colour"],
-                     "game_harmony": g["harmony"]["template"], "reference_harmony": r["harmony"]["template"]})
-    os.makedirs(OUT, exist_ok=True)
-    with open(os.path.join(OUT, "game_shots.json"), "w", encoding="utf-8", newline="\n") as f:
-        json.dump(rows, f, indent=1)
-    measured = [r for r in rows if not r.get("missing")]
-    close = sum(1 for r in measured if not r["outside"])
-    print(f"game shots: {close}/{len(measured)} pairs within tolerance of their reference (warning only)"
-          + "".join(f"\n    {r['label']}: " + "; ".join(f"{k} {r['axes'][k]['reference']} -> {r['axes'][k]['game']}"
-                                                         for k in r["outside"]) for r in measured if r["outside"])
-          + "".join(f"\n    {r['label']}: missing {', '.join(r['missing'])}" for r in rows if r.get("missing")))
-    return rows
-
-def brief(name, cls):
+def brief(name, cls=None):
     """The brief a new asset starts from (the research report, step 8): the style in one page, for its class."""
     style = load_style()
+    if style.get("schema", 2) >= 3:
+        import StyleGuide
+        result = StyleGuide.brief(ROOT, name, cls=cls)
+        print(f"brief: {result['path']}")
+        return result
+    cls = cls or "prop"
     st = style["stylisation"]
     albedo = style["measured"]["albedo"]
     floor = st["detail_floor_m"].get(cls, st["detail_floor_m"].get("prop"))
@@ -686,13 +675,12 @@ def brief(name, cls):
              f"- Chamfers on hard parts: {st['chamfer_mm']['hard_parts']} mm" + (" (checked)" if cls in st.get("chamfer_applies_to", []) else ""),
              f"- Base colours inside lightness {albedo['gamut']['lightness']} and chroma at most {albedo['gamut']['chroma_max']}; "
              f"palette: {' '.join(p['hex'] for p in albedo['palette'])}",
-             "- Chroma ceiling per hue: " + ", ".join(f"{LAB_HUE_NAMES[i]} {v:g}" for i, v in enumerate(albedo["gamut"].get("chroma_by_hue", []))),
+             "- Legacy chroma ceiling per CIELAB hue: " + ", ".join(f"{i * 30} deg {v:g}" for i, v in enumerate(albedo["gamut"].get("chroma_by_hue", []))),
              "- Finishes by kind: " + "; ".join(f"{k} {'/'.join(v)}" for k, v in style.get("finish_by_kind", {}).items()), "",
              "**Rules** (id, kind: what; checked by):", ""]
     lines += [f"- `{r['id']}` ({r['kind']}): {r['text']}; checked by {r['check']}" for r in style["rules"]]
-    lines += ["", "**Steps:** research (model-plausibility 2b), then the plan, then block-out: a preview and a decision "
-              "(`Review.py decide <m> approve|revise --stage blockout --note \"<view>: ...\"`), then detail, the build (gates), "
-              "the review (complex tier), the look-dev lineup and the user's approval."]
+    lines += ["", "Legacy schema-2 brief. Migrate the project to schema 3 for source-backed, scoped guidance. "
+              "Technical checks and visual approval remain separate."]
     path = os.path.join(OUT, "briefs", name + ".md")
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w", encoding="utf-8", newline="\n") as f:
@@ -710,520 +698,21 @@ def _font(size):
         return ImageFont.load_default()
 
 
-def _png(image):
-    buffer = io.BytesIO()
-    image.save(buffer, "PNG", optimize=True)
-    return "data:image/png;base64," + base64.b64encode(buffer.getvalue()).decode()
-
-
-def _file_png(path, max_side=1400):
-    if not os.path.exists(path):
-        return None
-    image = Image.open(path).convert("RGB")
-    image.thumbnail((max_side, max_side))
-    return _png(image)
-
-
-def _swatches(entries, label=True, size=64):
-    image = Image.new("RGB", (len(entries) * (size + 6) + 6, size + (22 if label else 6)), (250, 247, 240))
-    draw = ImageDraw.Draw(image)
-    for i, e in enumerate(entries):
-        x = 6 + i * (size + 6)
-        draw.rectangle([x, 4, x + size, 4 + size], fill=e["hex"])
-        if label:
-            draw.text((x, size + 6), e["hex"], fill=(50, 45, 40), font=_font(11))
-    return _png(image)
-
-
-def _notan_strip(sources, height=120):
-    """Every source and its three-value notan (dark < L* 35 <= mid < 70 <= light)."""
-    tiles = []
-    for _, image in sources:
-        t = image.copy()
-        t.thumbnail((180, height))
-        L = srgb_to_lab(np.asarray(t, dtype=float))[..., 0]
-        notan = np.where(L < 35, 50, np.where(L < 70, 140, 235)).astype(np.uint8)
-        tiles.append((t, Image.fromarray(notan, "L").convert("RGB")))
-    width = sum(t.width + 6 for t, _ in tiles) + 6
-    strip = Image.new("RGB", (width, height * 2 + 18), (250, 247, 240))
-    x = 6
-    for t, n in tiles:
-        strip.paste(t, (x, 6))
-        strip.paste(n, (x, height + 12))
-        x += t.width + 6
-    return _png(strip)
-
-
-def _bars(values, labels, colours=None, width=640, height=180, fmt="{:.0%}"):
-    image = Image.new("RGB", (width, height + 40), (250, 247, 240))
-    draw = ImageDraw.Draw(image)
-    n = len(values)
-    bw = (width - 20) / n
-    top = max(values) or 1
-    for i, v in enumerate(values):
-        x0 = 10 + i * bw
-        h = height * v / top
-        draw.rectangle([x0 + 3, 10 + height - h, x0 + bw - 3, 10 + height], fill=(colours[i] if colours else "#8C7F70"))
-        draw.text((x0 + 3, height + 14), labels[i], fill=(50, 45, 40), font=_font(10))
-        draw.text((x0 + 3, max(0, height - h - 4)), fmt.format(v), fill=(50, 45, 40), font=_font(10))
-    return _png(image)
-
-
-def _silhouettes(folder):
-    """Every model's 64 and 32 px silhouettes, enlarged without smoothing (each pixel stays visible), with its name."""
-    names = sorted({os.path.basename(p)[4:-7] for p in glob.glob(os.path.join(folder, "sil_*_64.png"))})
-    if not names:
-        return None
-    cell = 300
-    sheet = Image.new("RGB", (len(names) * cell, 180), (250, 247, 240))
-    draw = ImageDraw.Draw(sheet)
-    for i, name in enumerate(names):
-        x = i * cell + 10
-        for j, size in enumerate((64, 32)):
-            path = os.path.join(folder, f"sil_{name}_{size}.png")
-            if os.path.exists(path):
-                sheet.paste(Image.open(path).convert("RGB").resize((128, 128), Image.NEAREST), (x + j * 140, 10))
-        draw.text((x, 146), f"{name}  (64 px | 32 px)", fill=(50, 45, 40), font=_font(13))
-    return _png(sheet)
-
-
-def _stack(paths, width=1400):
-    images = []
-    for path in paths:
-        if os.path.exists(path):
-            image = Image.open(path).convert("RGB")
-            image.thumbnail((width, 700))
-            images.append(image)
-    if not images:
-        return None
-    sheet = Image.new("RGB", (max(i.width for i in images), sum(i.height + 8 for i in images)), (250, 247, 240))
-    y = 0
-    for image in images:
-        sheet.paste(image, (0, y))
-        y += image.height + 8
-    return _png(sheet)
-
-
-LAB_HUE_NAMES = ["pink-red", "red", "orange", "yellow", "yellow-green", "green", "teal", "cyan", "sky blue", "blue",
-                 "violet", "magenta"]   # CIELAB hue families of 30 degrees, centred on 0, 30, ... degrees (hue_bin)
-AXES = {"lightness_median": "overall value", "lightness_p10": "darkest tones (L* p10)", "lightness_p90": "lightest tones (L* p90)",
-        "contrast_rms": "contrast", "notan_dark": "share of dark values", "notan_mid": "share of mid values",
-        "notan_light": "share of light values", "chroma_median": "overall colour", "chroma_p90": "strongest colours",
-        "chroma_dark": "colour in the shadows", "chroma_mid": "colour in the mid values", "chroma_light": "colour in the lights",
-        "shadow_shift_a": "light-shadow shift (red-green)", "shadow_shift_b": "light-shadow shift (yellow-blue)",
-        "fourier_slope": "detail spectrum slope", "edge_density": "edges", "busyness": "fine detail"}
-RED, AMBER, GREEN, ACCENT = (190, 62, 48), (204, 140, 30), (60, 130, 80), (122, 106, 154)
-
-
-def _jpg(image, quality=84):
-    buffer = io.BytesIO()
-    image.convert("RGB").save(buffer, "JPEG", quality=quality, optimize=True)
-    return "data:image/jpeg;base64," + base64.b64encode(buffer.getvalue()).decode()
-
-
-def _open(path, max_side=None):
-    if not path or not os.path.exists(path):
-        return None
-    image = Image.open(path).convert("RGB")
-    if max_side:
-        image.thumbnail((max_side, max_side))
-    return image
-
-
-def _callout(image, box, label, colour=RED, below=False):
-    """A labelled rectangle on the image, in place; box (x0, y0, x1, y1) in the image's pixels."""
-    draw = ImageDraw.Draw(image)
-    x0, y0, x1, y1 = (int(v) for v in box)
-    draw.rectangle([x0, y0, x1, y1], outline=colour, width=3)
-    font = _font(15)
-    w = int(draw.textlength(label, font=font)) + 10
-    ty = y1 + 3 if below or y0 < 24 else y0 - 23
-    ty = min(ty, image.height - 21)
-    tx = min(max(0, x0), image.width - w)
-    draw.rectangle([tx, ty, tx + w, ty + 20], fill=colour)
-    draw.text((tx + 5, ty + 2), label, fill=(255, 255, 255), font=font)
-
-
-def _model_view(model):
-    """A model's first rendered view (Builds/Models/<model>/views.json order)."""
-    folder = os.path.join(ROOT, "Builds", "Models", model)
-    path = os.path.join(folder, "views.json")
-    if not os.path.exists(path):
-        return None
-    with open(path, encoding="utf-8") as f:
-        for view in json.load(f).get("views", []):
-            png = os.path.join(folder, view.get("file", ""))
-            if view.get("type") != "reference" and view.get("file") and os.path.exists(png):
-                return png
-    return None
-
-
-def _difference_box(a, b):
-    """Where two renders of the same camera differ: the box around the strongest 10 % of the difference, and its mean."""
-    d = np.abs(np.asarray(a, dtype=float) - np.asarray(b, dtype=float)).mean(axis=2)
-    smooth = np.asarray(Image.fromarray(np.clip(d, 0, 255).astype(np.uint8)).filter(ImageFilter.BoxBlur(4)), dtype=float)
-    mask = smooth > max(6.0, float(np.percentile(smooth, 90)))
-    ys, xs = np.nonzero(mask)
-    if len(xs) < 50:
-        return None, float(d.mean())
-    return (np.percentile(xs, 1), np.percentile(ys, 1), np.percentile(xs, 99), np.percentile(ys, 99)), float(d.mean())
-
-
-def _saturated_caught(model, style, factor=2.6):
-    """The oversaturated near miss against the colour gate: the model's authored colours with factor x the saturation
-    (as tools/blender/lookdev.py renders it), how many of them check() rejects."""
-    import colorsys
-    g = style["measured"]["albedo"]["gamut"]
-    by_hue = g.get("chroma_by_hue")
-    colours = [surface_name for surface_name in (s["name"] for s in spec(model).get("surfaces", [])) if HEX.match(surface_name)]
-    caught = 0
-    for name in colours:
-        hexes = HEX.match(name).group(1)
-        r, gg, b = (int(hexes[i:i + 2], 16) / 255 for i in (0, 2, 4))
-        h, s_, v = colorsys.rgb_to_hsv(r, gg, b)
-        lab = srgb_to_lab(np.array(colorsys.hsv_to_rgb(h, min(1.0, s_ * factor), v)) * 255)
-        c = chroma(lab)
-        caught += c > g["chroma_max"] or bool(by_hue and c >= HUE_MIN_CHROMA and c > by_hue[int(hue_bin(lab))])
-    return caught, len(colours)
-
-
-def _hue_ceiling_chart(ceilings, floor, width=720, height=170):
-    image = Image.new("RGB", (width, height + 46), (250, 247, 240))
-    draw = ImageDraw.Draw(image)
-    top = max(ceilings) or 1
-    bw = (width - 20) / 12
-    for i, v in enumerate(ceilings):
-        x0 = 10 + i * bw
-        h = height * v / top
-        colour = tuple(int(c) for c in lab_to_srgb([60.0, 45 * math.cos(math.radians(i * 30)), 45 * math.sin(math.radians(i * 30))]))
-        draw.rectangle([x0 + 3, 10 + height - h, x0 + bw - 3, 10 + height], fill=colour if v > floor else (205, 199, 188))
-        draw.text((x0 + 3, max(0, height - h - 6)), f"{v:g}", fill=(50, 45, 40), font=_font(11))
-        draw.text((x0 + 3, height + 14), LAB_HUE_NAMES[i], fill=(50, 45, 40), font=_font(10))
-    return _png(image)
-
-
-def _tag(text, level):
-    return f'<span class="tag {level}">{html.escape(text)}</span>'
-
-
-def _pair_rows(rows):
-    """The axes on which the game moved away from the source in at least half the pairs, with the direction."""
-    measured = [r for r in rows if not r.get("missing")]
-    moves = {}
-    for r in measured:
-        for key in r["outside"]:
-            moves.setdefault(key, []).append(1 if r["axes"][key]["delta"] > 0 else -1)
-    common = []
-    for key, signs in sorted(moves.items(), key=lambda kv: -len(kv[1])):
-        if len(signs) * 2 >= len(measured) and abs(sum(signs)) == len(signs):
-            common.append(f"{AXES.get(key, key)} {'higher' if signs[0] > 0 else 'lower'} in {len(signs)} of {len(measured)}")
-    return measured, common
-
-
 def bible():
-    style = load_style()
-    problems = validate(style)
-    if problems or "lit" not in style.get("measured", {}):
-        sys.exit("style.json: " + "; ".join(problems or ["not measured: run extract first"]))
-    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-    import Review
-    Review.ROOT = ROOT
-    sources = load_sources([])
-    lit, albedo = style["measured"]["lit"], style["measured"]["albedo"]
-    p = lit["profile"]
-    st = style["stylisation"]
-    notes = style.get("notes", {})
-    rules = {r["id"]: r for r in style["rules"]}
-    lookdev = os.path.join(OUT, "lookdev")
-    hue_colours = ["#C8504A", "#D9893F", "#D8C24A", "#A7C04A", "#5FA455", "#4FA392", "#4FA3B8", "#5A8CC8", "#5A66C0",
-                   "#7E5DB8", "#A65AA8", "#C85A8C"]
-
-    def num(key, unit=""):
-        v = p[key]
-        return f"{v['median']}{unit} (IQR {v['p25']}–{v['p75']})"
-
-    def img(src, alt, caption=""):
-        if not src:
-            return '<p class="missing">(not rendered yet: tools/LookDev.ps1)</p>'
-        cap = f"<figcaption>{caption}</figcaption>" if caption else ""
-        return f'<figure><img src="{src}" alt="{html.escape(alt)}">{cap}</figure>'
-
-    def prose(key):
-        return f'<p class="prose">{html.escape(notes[key])}</p>' if notes.get(key) else ""
-
-    def table(group):
-        rows = [r for r in style["rules"] if r["id"].split(".")[0] == group]
-        return ("<table><tr><th>Rule</th><th>What</th><th>Kind</th><th>Checked by</th></tr>"
-                + "".join(f"<tr><td><code>{html.escape(r['id'])}</code></td><td>{html.escape(r['text'])}</td>"
-                          f"<td class='{r['kind']}'>{r['kind']}</td><td>{html.escape(r['check'])}"
-                          f"{' (reports only)' if r.get('enforce') == 'warn' else ''}</td></tr>" for r in rows) + "</table>")
-
-    # Every model: class, triangles, gates, review state
-    models = {}
-    for m in built_models():
-        if m in style.get("exempt", {}):
-            continue
-        colour_problems, distance, _ = check(m, style)
-        rule_problems, warnings, info = rules_check(m, style)
-        models[m] = {"problems": colour_problems + rule_problems, "warnings": warnings, "state": Review.state(m)["text"], **info}
-
-    # 1-8: the look
-    sh_a, sh_b = p["shadow_shift_a"]["median"], p["shadow_shift_b"]["median"]
-    shift_dir = ("lights warmer (yellow/red) than shadows" if sh_b > 2 else "lights cooler (blue) than shadows" if sh_b < -2
-                 else "lights and shadows the same temperature")
-    families = p["hue_families"]
-    top_families = sorted(families, key=lambda k: -families[k])[:4]
-    harmony_counts = ", ".join(f"{k} ×{v}" for k, v in p["harmony"].items())
-    by_hue = albedo["gamut"].get("chroma_by_hue")
-    floor = albedo["gamut"].get("chroma_floor", albedo["gamut"]["chroma_median"])
-    sections = []
-    sections.append(("vision", "1. Vision", prose("vision") + f"""
-<dl><dt>Anchor</dt><dd>{html.escape(st['anchor'])}</dd><dt>Tie-breaker</dt><dd>{html.escape(st['tie_breaker'])}</dd>
-<dt>Modelled or painted</dt><dd>{html.escape(st['modelled_vs_painted'])}</dd>
-<dt>Heroes</dt><dd>{', '.join(style.get('heroes', []))}: the assets every new one is compared with</dd></dl>
-{img(_jpg(_open(os.path.join(lookdev, 'lineup_large_game.png'), 1400)) if os.path.exists(os.path.join(lookdev, 'lineup_large_game.png')) else None,
-     'the style at a glance', 'The style at a glance: the large assets in the game light (look-dev scene, Blender).')}
-<p class="sub">Style version <b>{html.escape(style['style_version'])}</b>, measured from {len(lit['sources'])} source crops and
-{len(albedo['defined_by'])} models ({'approved' if albedo['approved_only'] else 'all built; none approved yet'}).</p>"""))
-    sections.append(("value", "2. Value structure (notan)", prose("value") + f"""
-<p>Every source on top, its three-value notan below (dark &lt; L* 35 ≤ mid &lt; 70 ≤ light). Dark {num('notan_dark')},
-mid {num('notan_mid')}, light {num('notan_light')} of the pixels; median lightness {num('lightness_median')}, RMS contrast
-{num('contrast_rms')} (L* units).</p>{img(_notan_strip(sources), 'notan')}"""))
-    sections.append(("colour", "3. Colour: palettes and gamut", prose("colour") + f"""
-<div class="two"><div><h3>On screen</h3><p>The lit sources: lightness {lit['gamut']['lightness'][0]}–{lit['gamut']['lightness'][1]},
-chroma at most {lit['gamut']['chroma_max']} (median {lit['gamut']['chroma_median']}).</p>{img(_swatches(lit['palette'], size=48), 'lit palette')}
-<p>Accents, the most saturated 5 %:</p>{img(_swatches(lit['accents'], size=48), 'accents')}</div>
-<div><h3>Base colours</h3><p>What the models are painted with (the light and the haze soften them on screen): lightness
-{albedo['gamut']['lightness'][0]}–{albedo['gamut']['lightness'][1]}, chroma at most {albedo['gamut']['chroma_max']}.</p>
-{img(_swatches(albedo['palette'], size=48), 'albedo palette')}</div></div>
-<h3>How saturated each hue may be</h3>
-<p>A base colour may be as saturated as the style's own colours of that hue get (×{CHROMA_MARGIN}); a hue the style never uses
-gets {HUE_NEIGHBOUR:.0%} of its neighbours', and muted colours (chroma up to {floor:.0f}, grey bars) are always allowed.
-<code>Style.py report</code> fails a surface above its hue's ceiling unless its note says <i>style exception: why</i>.</p>
-{img(_hue_ceiling_chart(by_hue, floor) if by_hue else None, 'chroma ceiling per hue')}"""))
-    sections.append(("hue", "4. Hue families and harmony", prose("hue") + f"""
-<p>Hue families of the sources (OKLCh, weighted by chroma): mostly {', '.join(top_families)}. Harmony template per source
-(Cohen-Or 2006): {harmony_counts}. Saturation by value: dark {num('chroma_dark')}, mid {num('chroma_mid')}, light {num('chroma_light')}.</p>
-{img(_bars(list(families.values()), list(families.keys()), hue_colours), 'hue families')}"""))
-    sections.append(("light", "5. Light: shadow and light colour", prose("light") + f"""
-<p>The lightest fifth of each source against its darkest fifth: {shift_dir} (Δa {sh_a}, Δb {sh_b} in CIELAB). Shadow colours
-of the sources on top, their light colours below:</p>
-{img(_swatches([{'hex': m['shadow_colour']} for m in lit['per_image']], label=False, size=36), 'shadow colours')}
-{img(_swatches([{'hex': m['light_colour']} for m in lit['per_image']], label=False, size=36), 'light colours')}"""))
-    sections.append(("detail", "6. Detail and edges", prose("detail") + f"""
-<p>Fourier amplitude slope {num('fourier_slope')} (natural scenes about 1.2; steeper is calmer); edge density {num('edge_density')};
-busyness {num('busyness')} (L* std in 5 px windows at {DETAIL_SIZE} px). Detail floor:
-{', '.join(f'{k} {v * 1000:g} mm' for k, v in st['detail_floor_m'].items())}; chamfers on hard parts {st['chamfer_mm']['hard_parts'][0]}–{st['chamfer_mm']['hard_parts'][1]} mm.</p>"""
-                     + table("detail") + table("edges")))
-    sections.append(("shape", "7. Shape and silhouettes", prose("shape") + f"""
-<p>Each model as a black silhouette at 64 and 32 px, enlarged without smoothing.</p>{img(_silhouettes(lookdev), 'silhouettes')}"""
-                     + table("shape")))
-    finish_rows = "".join(f"<tr><td>{html.escape(k)}</td><td>{', '.join(v)}</td></tr>" for k, v in style.get("finish_by_kind", {}).items())
-    sections.append(("materials", "8. Materials and finish", prose("materials") + f"""
-{img(_jpg(_open(os.path.join(lookdev, 'spheres.png'), 1400)) if os.path.exists(os.path.join(lookdev, 'spheres.png')) else None,
-     'material spheres', 'Every surface of the models as a sphere in neutral light: base colour, finish and grain.')}
-<h3>Finish by kind</h3><p>A surface's finish must be one its kind allows (<code>Style.py report</code>, rule <code>finish.real_material</code>).</p>
-<table><tr><th>Kind</th><th>Finishes</th></tr>{finish_rows}</table>""" + table("surfaces") + table("finish") + table("colour")))
-
-    # 9. The lineup, labelled
-    def lineup(name):
-        path = os.path.join(lookdev, name + ".png")
-        image = _open(path)
-        if image is None:
-            return None
-        labels = json.load(open(path[:-4] + ".json", encoding="utf-8")) if os.path.exists(path[:-4] + ".json") else []
-        for i, item in enumerate(sorted(labels, key=lambda l: l["x0"])):
-            info = models.get(item["name"])
-            text = item["name"] + (f" · {info['triangles'] / 1000:.1f}k" if info else "")
-            level = RED if info and info["problems"] else AMBER if info and info["warnings"] else GREEN if info else ACCENT
-            _callout(image, (item["x0"], item["y0"], item["x1"], item["y1"]), text, colour=level, below=i % 2 == 1)
-        image.thumbnail((1400, 1400))
-        return _jpg(image)
-    sections.append(("lineup", "9. The lineup", """
-<p>All models at true scale beside a 1.8 m person. Label: name and triangles; green inside the style, amber with a warning,
-red failing a gate. In neutral light the assets are judged by themselves; in the game light (lavender sky, warm sun) they are
-seen as the game shows them, approximated in Blender.</p>"""
-                     + img(lineup("lineup_large_neutral"), "lineup large neutral", "Large assets, neutral light.")
-                     + img(lineup("lineup_small_neutral"), "lineup small neutral", "Small assets (below 1.5 m), neutral light.")
-                     + img(lineup("lineup_large_game"), "lineup large game", "Large assets, the game's light.")
-                     + img(lineup("lineup_small_game"), "lineup small game", "Small assets, the game's light.")))
-
-    # 10. Asset classes
-    cards = []
-    for cls, members in style.get("classes", {}).items():
-        budget = st["budgets_tris"].get(cls)
-        floor_mm = st["detail_floor_m"].get(cls, st["detail_floor_m"].get("prop"))
-        chamfer = cls in st.get("chamfer_applies_to", [])
-        items = []
-        for m in members:
-            info = models.get(m)
-            if info is None:
-                items.append(f"<div class='card'><b>{m}</b><p class='missing'>not built</p></div>")
-                continue
-            view = _open(_model_view(m), 360)
-            share = min(100, round(100 * info["triangles"] / budget[1])) if budget else 0
-            over = budget and info["triangles"] > budget[1]
-            status = (_tag("fails a gate", "bad") if info["problems"] else _tag(f"{len(info['warnings'])} warning(s)", "warn")
-                      if info["warnings"] else _tag("inside the style", "good"))
-            notes_list = "".join(f"<li>{html.escape(t)}</li>" for t in info["problems"] + info["warnings"][:4])
-            more = len(info["warnings"]) - 4
-            items.append(f"""<div class="card">{f'<img src="{_jpg(view)}" alt="{m}">' if view else ''}<b>{m}</b> {status}
-<div class="bar"><span class="{'over' if over else ''}" style="width:{share}%"></span></div>
-<p class="small">{info['triangles']:,} triangles{f' of {budget[1]:,}' if budget else ''} · {html.escape(info['state'])}</p>
-{f'<ul class="small">{notes_list}{f"<li>… {more} more</li>" if more > 0 else ""}</ul>' if notes_list else ''}</div>""")
-        cards.append(f"""<h3>{cls}</h3><p>Budget {f'{budget[0]:,}–{budget[1]:,}' if budget else '(none)'} triangles · detail floor
-{floor_mm * 1000:g} mm{f" · chamfers {st['chamfer_mm']['hard_parts'][0]}–{st['chamfer_mm']['hard_parts'][1]} mm on hard parts (checked)" if chamfer else ''}</p>
-<div class="grid">{''.join(items)}</div>""")
-    exempt = "".join(f"<li><b>{html.escape(k)}</b>: {html.escape(v)}</li>" for k, v in style.get("exempt", {}).items())
-    sections.append(("classes", "10. Asset classes", prose("classes") + "".join(cards)
-                     + (f"<p>Outside the style (exempt):</p><ul>{exempt}</ul>" if exempt else "")))
-
-    # 11. Do and don't
-    blocks = []
-    prof = lit["profile"]
-    for near in style.get("lookdev", {}).get("near_miss_models", []):
-        base_path = os.path.join(lookdev, f"near_{near}_style.png")
-        base = _open(base_path)
-        if base is None:
-            continue
-        tiles = [f'<div class="card do">{img(_jpg(base), "the style", f"<b>Do:</b> {near} in the style")}</div>']
-        for miss in style.get("near_misses", []):
-            path = os.path.join(lookdev, f"near_{near}_{miss['variant']}.png")
-            image = _open(path)
-            if image is None:
-                continue
-            rule = rules.get(miss["rule"], {})
-            box, mean = _difference_box(base, image)
-            if box:
-                _callout(image, box, miss["rule"], colour=RED)
-            _, outside, _, _ = pair_check(_pair_image(path), _pair_image(base_path), prof)
-            seen = (f"the measured look check sees {', '.join(AXES.get(k, k) for k in outside[:4])}" if outside
-                    else "the measured look check does not see it: the review must")
-            gate = ""
-            if miss["variant"] == "oversaturated" and spec(near).get("surfaces"):
-                caught, total = _saturated_caught(near, style)
-                gate = f" <code>Style.py report</code> rejects {caught} of its {total} base colours."
-            tiles.append(f"""<div class="card dont">{img(_jpg(image), miss['variant'], f"<b>Don't:</b> {html.escape(miss['what'])}")}
-<p class="small">Breaks <code>{html.escape(miss['rule'])}</code> ({html.escape(rule.get('text', ''))}); caught by
-{html.escape(rule.get('check', ''))}.{gate} Against the style render: {mean:.1f} levels of 255 on average; {html.escape(seen)}.</p></div>""")
-        blocks.append(f"<h3>{near}</h3><div class='grid'>{''.join(tiles)}</div>")
-    sections.append(("dodont", "11. Do and don't", prose("do_dont") + ("".join(blocks) or '<p class="missing">(no near misses rendered yet: tools/LookDev.ps1)</p>')))
-
-    # 12. In the game
-    shots_path = os.path.join(OUT, "game_shots.json")
-    rows = json.load(open(shots_path, encoding="utf-8")) if os.path.exists(shots_path) else game_shots(style)
-    measured, common = _pair_rows(rows)
-    pairs = []
-    for r in measured:
-        ref, game = _open(os.path.join(ROOT, r["reference"]), 640), _open(os.path.join(ROOT, r["game"]), 640)
-        off = "".join(f"<tr><td>{AXES.get(k, k)}</td><td>{r['axes'][k]['reference']}</td><td>{r['axes'][k]['game']}</td>"
-                      f"<td>±{r['axes'][k]['tolerance']}</td></tr>" for k in r["outside"])
-        pairs.append(f"""<h3>{html.escape(r['label'])} {_tag('close to the source', 'good') if not r['outside'] else _tag(f"{len(r['outside'])} axes off", 'warn')}</h3>
-<div class="two">{img(_jpg(ref) if ref else None, 'reference', 'The trailer')}{img(_jpg(game) if game else None, 'game', 'The game')}</div>
-{f'<table><tr><th>Axis</th><th>Trailer</th><th>Game</th><th>Allowed</th></tr>{off}</table>' if off else ''}""")
-    close = sum(1 for r in measured if not r["outside"])
-    summary = (f"<p><b>{close} of {len(measured)}</b> game shots are within tolerance of their trailer frame on every axis "
-               f"(tolerance: half the spread of the sources on that axis; <code>Style.py shots</code>, reported, never failing)."
-               + (f" Across the pairs: {html.escape('; '.join(common))}." if common else "") + "</p>")
-    sections.append(("game", "12. In the game", prose("in_game") + summary + "".join(pairs)))
-
-    # 13. The process
-    log_rows = []
-    for m in models:
-        entries = Review.decisions(m)
-        if entries:
-            last = "; ".join(f"{e['stage']} round {e['round']}: {e['decision']}" for e in entries[-4:])
-            log_rows.append(f"<tr><td>{m}</td><td>{html.escape(last)}</td></tr>")
-    sections.append(("process", "13. Making a new asset", f"""
-<ol class="steps">
-<li><b>Brief.</b> <code>py -3 tools/Style.py brief NAME --class CLASS</code>: this style in one page for the class (budget, detail
-floor, chamfers, colours, finishes, rules).</li>
-<li><b>Research and plan</b> (skill model-plausibility): how such an object is built and modelled; components, supports, features.</li>
-<li><b>Block-out.</b> <code>tools/Models.ps1 -Only NAME -Preview</code>, then one decision:
-<code>py -3 tools/Review.py decide NAME approve|revise|escalate --stage blockout --note "VIEW: what"</code>. A revision says
-where; after {Review.MAX_ROUNDS} revisions the user decides.</li>
-<li><b>Detail and build.</b> The gates run in <code>tools/Verify.ps1</code>: construction, colours and finishes, budgets, chamfers.</li>
-<li><b>Review</b> (complex models): the pack carries the style board, the heroes and the near misses; a "style:" finding must name
-a pack image and a place in it.</li>
-<li><b>Look.</b> <code>tools/LookDev.ps1</code>: the new asset in the lineup beside the heroes, in both lights.</li>
-<li><b>Approval</b> by the user (<code>tools/Verify.ps1 -Approve NAME</code>) and the final decision (<code>--stage final</code>).</li>
-</ol>
-<h3>Decisions so far</h3>""" + (f"<table><tr><th>Model</th><th>Last rounds</th></tr>{''.join(log_rows)}</table>" if log_rows
-                               else '<p class="missing">No decisions recorded yet: the log starts with the next asset.</p>')))
-
-    # 14. Checks and history
-    all_rules = "".join(f"<tr><td><code>{html.escape(r['id'])}</code></td><td class='{r['kind']}'>{r['kind']}</td>"
-                        f"<td>{'reports' if r.get('enforce') == 'warn' else 'fails'}</td><td>{html.escape(r['check'])}</td></tr>"
-                        for r in style["rules"])
-    lo_cov = min(lit["leave_one_out"]["inside_share"])
-    sections.append(("checks", "14. Checks, budgets and history", f"""
-<table><tr><th>Rule</th><th>Kind</th><th>A gate</th><th>Checked by</th></tr>{all_rules}</table>
-<table><tr><th>Class</th><th>Triangles</th><th>Detail floor</th></tr>"""
-                     + "".join(f"<tr><td>{k}</td><td>{v[0]:,}–{v[1]:,}</td><td>{(st['detail_floor_m'].get(k) or st['detail_floor_m'].get('prop')) * 1000:g} mm</td></tr>"
-                               for k, v in st["budgets_tris"].items()) + "</table>"
-                     + f"<p>Leave-one-out: a source has a median {lit['leave_one_out']['median']:.0%} of its measures inside the "
-                       f"other sources' band (lowest {lo_cov:.0%}). More sources make a steadier profile: 20–50 frames.</p>"
-                     + "<ul>" + "".join(f"<li><b>{html.escape(h['date'])}</b> {html.escape(h.get('version', ''))}: {html.escape(h['change'])}</li>"
-                                        for h in style.get("history", [])) + "</ul>"))
-
-    toc = "".join(f'<a href="#{key}">{html.escape(title)}</a>' for key, title, _ in sections)
-    body = "".join(f'<section id="{key}"><h2>{html.escape(title)}</h2>{content}</section>' for key, title, content in sections)
-    css = """
-:root{--bg:#F7F3EA;--ink:#2E2A25;--muted:#6E665C;--line:#DDD3C3;--card:#FFFDF8;--accent:#7A6A9A;--good:#3C8250;--warn:#B07A12;--bad:#B43E30}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#1F1D1A;--ink:#EDE6DA;--muted:#A9A091;--line:#3A352E;--card:#26231F;--accent:#B6A5D6;--good:#7CC08D;--warn:#E0B050;--bad:#E47C6E}}
-:root[data-theme="dark"]{--bg:#1F1D1A;--ink:#EDE6DA;--muted:#A9A091;--line:#3A352E;--card:#26231F;--accent:#B6A5D6;--good:#7CC08D;--warn:#E0B050;--bad:#E47C6E}
-*{box-sizing:border-box} body{background:var(--bg);color:var(--ink);font:16px/1.55 Georgia,'Times New Roman',serif;margin:0}
-main{max-width:1160px;margin:0 auto;padding:24px 16px 64px} h1{font-size:2.1rem;margin:.2em 0}
-h2{font-size:1.4rem;border-bottom:1px solid var(--line);padding-bottom:.25em;margin-top:1.4em;color:var(--accent)}
-h3{font-size:1.08rem;margin:1.2em 0 .3em}
-nav{display:flex;flex-wrap:wrap;gap:6px 14px;font:14px/1.4 system-ui,sans-serif;margin:12px 0 4px} nav a{color:var(--accent);text-decoration:none}
-section{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 20px 18px;margin:18px 0}
-figure{margin:10px 0} img{max-width:100%;height:auto;border-radius:6px;display:block}
-figcaption{font:13px/1.4 system-ui,sans-serif;color:var(--muted);margin-top:4px}
-.prose{font-size:1.06rem;border-left:3px solid var(--accent);padding-left:12px}
-table{border-collapse:collapse;width:100%;margin:12px 0;font:14px/1.4 system-ui,sans-serif;display:block;overflow-x:auto}
-th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top} th{color:var(--muted)}
-td.invariant{color:var(--bad);font-weight:600} td.tunable{color:var(--good)} code{font-size:.88em;overflow-wrap:anywhere}
-dl{display:grid;grid-template-columns:max-content 1fr;gap:4px 16px} dt{color:var(--muted)}
-.missing{color:var(--muted);font-style:italic} .sub,.small{color:var(--muted)} .small{font:13px/1.45 system-ui,sans-serif}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
-.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
-.card{border:1px solid var(--line);border-radius:8px;padding:10px;background:var(--bg)} .card img{margin-bottom:6px}
-.card.do{border-color:var(--good)} .card.dont{border-color:var(--bad)}
-.tag{font:12px/1 system-ui,sans-serif;padding:3px 7px;border-radius:10px;color:#fff;white-space:nowrap}
-.tag.good{background:var(--good)} .tag.warn{background:var(--warn)} .tag.bad{background:var(--bad)}
-.bar{height:6px;background:var(--line);border-radius:3px;margin:6px 0 2px;overflow:hidden}
-.bar span{display:block;height:100%;background:var(--good)} .bar span.over{background:var(--bad)}
-ol.steps li{margin:6px 0}
-@media (max-width:600px){dl{grid-template-columns:1fr} section{padding:6px 12px 14px}}
-"""
-    page = f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Art bible</title><style>{css}</style></head><body><main>
-<h1>Art bible: {html.escape(style['name'])}</h1>
-<p class="sub">Generated by <code>tools/Style.py bible</code> from <code>tools/blender/style/style.json</code> (style
-{html.escape(style['style_version'])}, {datetime.date.today().isoformat()}). Every rule names the check that enforces it; every
-number is measured from the sources or the models, never typed.</p>
-<p class="lead">{html.escape(style['summary'])}</p><nav>{toc}</nav>
-{body}</main></body></html>"""
-    os.makedirs(OUT, exist_ok=True)
-    path = os.path.join(OUT, "art_bible.html")
-    with open(path, "w", encoding="utf-8", newline="\n") as f:
-        f.write(page)
-    print(f"art bible: {os.path.relpath(path, ROOT)} ({len(page) // 1024} KB, {len(sections)} sections; "
-          f"{sum(1 for m in models.values() if m['problems'])} models failing a gate, "
-          f"{sum(1 for m in models.values() if m['warnings'])} with warnings; game shots {close}/{len(measured)} close)")
+    """Build the synchronized AI guide and human visual report."""
+    import StyleGuide
+    result = StyleGuide.build(ROOT)
+    print("Guideline artifacts: " + json.dumps(result, ensure_ascii=False))
+    return result
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("action", choices=("extract", "report", "validate", "bible", "shots", "brief"))
+    parser.add_argument("action", choices=("extract", "report", "validate", "bible", "brief"))
     parser.add_argument("args", nargs="*")
     parser.add_argument("--json", action="store_true")
-    parser.add_argument("--class", dest="cls", default="prop")
+    parser.add_argument("--class", dest="cls", default=None)
     a = parser.parse_args()
-    if a.action == "shots":
-        game_shots(load_style())
-        return
     if a.action == "brief":
         if not a.args:
             sys.exit("brief NAME --class CLASS")

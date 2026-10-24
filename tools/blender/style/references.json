@@ -1,0 +1,235 @@
+{
+  "schema": 1,
+  "references": [
+    {
+      "id": "mower-body",
+      "path": "docs/reference/22_mower_close.png",
+      "sha256": "563cb594a0d38ecd3b4c1fdd8956bc17e005e8ca4fc820b4985468fd0e8915b4",
+      "crop": [
+        300,
+        248,
+        260,
+        230
+      ],
+      "roles": [
+        "shape",
+        "proportion",
+        "edges",
+        "detail",
+        "colour",
+        "material"
+      ],
+      "scope": [
+        "machine"
+      ],
+      "label": "Biçme makinesi: ana gövde",
+      "group": "existing-trailer",
+      "observation": "Kırmızı tablanın geniş, yuvarlatılmış kabuğu; üstünde koyu motor bloğu; az sayıda belirgin oluk ve birleşim.",
+      "limitations": "Üstten perspektif görünüş; çim alt sınırı örter. Işık ve video sıkıştırması renk ve yüzey algısını etkiler."
+    },
+    {
+      "id": "mower-wheel",
+      "path": "docs/reference/21_mower_rear_wheel.png",
+      "sha256": "a09914d5fb557d294837e19e752c22d82d972d6beee1c48d36602225296c67da",
+      "crop": [
+        425,
+        330,
+        170,
+        148
+      ],
+      "roles": [
+        "shape",
+        "proportion",
+        "edges",
+        "detail",
+        "material"
+      ],
+      "scope": [
+        "machine"
+      ],
+      "label": "Biçme makinesi: teker ve aks çevresi",
+      "group": "existing-trailer",
+      "observation": "Koyu tekerde küçük, tekrarlanan dişler; gövdeye yakın aks; gövde kenarında yumuşak ışık geçişi.",
+      "limitations": "Çok küçük crop; kesin diş sayısı, profil ve pah ölçüsü çıkarılamaz. Sap tekerin bir kısmını örter."
+    },
+    {
+      "id": "hose-grip",
+      "path": "docs/reference/24_hose_nozzle.png",
+      "sha256": "0ea8ebd43790a0437e785da8b3f6d74f47bd8d7edd8228dbf0fa00d6d7b926f0",
+      "crop": [
+        490,
+        220,
+        200,
+        258
+      ],
+      "roles": [
+        "shape",
+        "proportion",
+        "edges",
+        "detail",
+        "colour",
+        "material"
+      ],
+      "scope": [
+        "held_tool"
+      ],
+      "label": "Hortum başlığı: baş, tutamak ve ayar",
+      "group": "existing-trailer",
+      "observation": "Yuvarlak yeşil baş; sarı-yeşil tutamak; koyu halka ve ayar düğmesi ayrı kütleler olarak okunuyor.",
+      "limitations": "Yandan eğik görünüş. HUD ve çim var; tutuş mekanizmasının görünmeyen tarafı belirsiz."
+    },
+    {
+      "id": "trimmer-body",
+      "path": "docs/reference/26_trimmer_body.png",
+      "sha256": "3a17523f299f98272e70c884724ef7f9c82b71d6fd12f480c5a5097219a6b10e",
+      "crop": [
+        420,
+        110,
+        330,
+        240
+      ],
+      "roles": [
+        "shape",
+        "proportion",
+        "edges",
+        "detail",
+        "colour",
+        "material"
+      ],
+      "scope": [
+        "held_tool"
+      ],
+      "label": "Tırpan: gövde ve yardımcı tutamak",
+      "group": "existing-trailer",
+      "observation": "Kırmızı ana kapak, koyu arka blok ve halka biçimli yardımcı tutamak; kapak köşeleri keskin kutu gibi görünmüyor.",
+      "limitations": "Kadro kesik; batarya ve iç mekanizma ayrıntıları net değil. Sağ altta arayüz bulunuyor."
+    },
+    {
+      "id": "shed-front",
+      "path": "docs/reference/28_shed_front.png",
+      "sha256": "6c12bdf58f4d120e2ba9023d7f82f619a3c2e8d6e3f04a86ba659066c9bcdda6",
+      "crop": [
+        330,
+        20,
+        330,
+        240
+      ],
+      "roles": [
+        "shape",
+        "proportion",
+        "edges",
+        "detail",
+        "colour",
+        "material"
+      ],
+      "scope": [
+        "building"
+      ],
+      "label": "Kulübe: cephe ve çatı",
+      "group": "existing-trailer",
+      "observation": "Basit beşik çatı; mavi-gri yatay kaplama; açık krem çerçeve ve kapılar; koyu çatı. Çatı, duvar ve kapı birincil kütleler.",
+      "limitations": "Tek cepheden perspektif; alt duvar görünmüyor. Eskime, doku ve gölge sınırlarını kesin ayırmak mümkün değil."
+    },
+    {
+      "id": "house-facade",
+      "path": "docs/reference/29_house_garden_facade.png",
+      "sha256": "af978b374ed394d3a2978b313fb754a5ecbb76b1855bd255d481e547a32d7de6",
+      "crop": [
+        360,
+        0,
+        488,
+        250
+      ],
+      "roles": [
+        "shape",
+        "proportion",
+        "detail",
+        "colour",
+        "material",
+        "context"
+      ],
+      "scope": [
+        "building"
+      ],
+      "label": "Ev: genel cephe ritmi",
+      "group": "existing-trailer",
+      "observation": "Uzun ana çatı, yatay cephe çizgileri, tekrar eden açık pencereler ve daha küçük veranda çatısı birlikte okunuyor.",
+      "limitations": "Uzak çekim; HUD üst cepheyi örter, bahçe objeleri alt kısmı kapatır. Yapım ölçüsü ve malzeme parametresi için yeterli değil."
+    },
+    {
+      "id": "house-porch",
+      "path": "docs/reference/29_house_garden_facade.png",
+      "sha256": "af978b374ed394d3a2978b313fb754a5ecbb76b1855bd255d481e547a32d7de6",
+      "crop": [
+        660,
+        110,
+        140,
+        100
+      ],
+      "roles": [
+        "shape",
+        "proportion",
+        "detail",
+        "colour"
+      ],
+      "scope": [
+        "building"
+      ],
+      "label": "Ev: veranda ve ana duvar ilişkisi",
+      "group": "existing-trailer",
+      "observation": "Küçük veranda çatısı ana duvara bağlanır; açık direk/kapı çevresi, koyu çatı yüzeyinden ayrışır.",
+      "limitations": "Düşük çözünürlüklü büyütme. Birleşim donanımı, kaplama kalınlığı ve mesafeler görünmüyor."
+    },
+    {
+      "id": "swing-context",
+      "path": "docs/reference/27_tree_swing.png",
+      "sha256": "12236b7e5ea66b15a3acc9b10f5573b1b711586ee048aa2ae37e63c018d873d0",
+      "crop": [
+        330,
+        0,
+        420,
+        478
+      ],
+      "roles": [
+        "shape",
+        "proportion",
+        "detail",
+        "material",
+        "context"
+      ],
+      "scope": [
+        "suspended"
+      ],
+      "label": "Salıncak: ip ve lastik",
+      "group": "existing-trailer",
+      "observation": "Tek ip aşağıdaki koyu lastiğe ulaşır; ip ile lastiğin ölçek farkı belirgin, lastiğin iç boşluğu korunur.",
+      "limitations": "Dal bağlantısı kadro dışında; insan ve çevre renk ölçümünü etkiler. Görünmeyen düğümün biçimi çıkarılamaz."
+    },
+    {
+      "id": "tree-trunk",
+      "path": "docs/reference/27_tree_swing.png",
+      "sha256": "12236b7e5ea66b15a3acc9b10f5573b1b711586ee048aa2ae37e63c018d873d0",
+      "crop": [
+        0,
+        0,
+        300,
+        478
+      ],
+      "roles": [
+        "shape",
+        "proportion",
+        "detail",
+        "colour",
+        "material"
+      ],
+      "scope": [
+        "tree",
+        "suspended"
+      ],
+      "label": "Ağaç: gövde ve kök",
+      "group": "existing-trailer",
+      "observation": "Gövde tabana doğru genişler ve belirgin kök çıkıntılarıyla yere bağlanır. Kabukta geniş koyu/açık lekeler ve seyrek uzun yarıklar okunuyor.",
+      "limitations": "Taç ve ana dallar büyük ölçüde kadro dışında. Gövde üzerindeki koyu lekelerin bir kısmı ışık olabilir; dokuya doğrudan kopyalanmamalı."
+    }
+  ]
+}

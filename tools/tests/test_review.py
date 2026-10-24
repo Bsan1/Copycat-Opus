@@ -14,6 +14,7 @@ import shutil
 import sys
 import tempfile
 import unittest
+from unittest import mock
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import Review as R  # noqa: E402
@@ -75,6 +76,30 @@ class Project(unittest.TestCase):
 
 
 class RecordTests(Project):
+    def test_schema3_pack_is_scoped_and_changed_guidance_changes_pack_id(self):
+        import StyleGuide
+        R.write_json(os.path.join(self.root, "tools", "blender", "style", "style.json"),
+                     {"schema": 3, "heroes": ["ignored"], "rules": [{"id": "unrelated", "text": "Do not copy"}]})
+        board = os.path.join(self.root, "selected.png")
+        Image.new("RGB", (40, 30), (50, 80, 110)).save(board)
+        guide = {"text": "[shape.readable] Relevant instruction", "board": board, "rules_hash": "r1",
+                 "reference_ids": ["mower-reference"], "stats": {"estimated_text_tokens": 20}}
+        with mock.patch.object(StyleGuide, "brief", return_value=guide) as brief:
+            first = R.pack("m", "final")
+            brief.assert_called_once_with(self.root, "m")
+            self.assertIn("style_references.png", first["files"])
+            self.assertNotIn("heroes.png", first["files"])
+            self.assertNotIn("near_misses.png", first["files"])
+            self.assertNotIn("style_board.png", first["files"])
+            with open(os.path.join(self.root, "Builds", "Review", "m", "brief.md"), encoding="utf-8") as source:
+                text = source.read()
+            self.assertIn("Relevant instruction", text)
+            self.assertNotIn("Do not copy", text)
+            self.assertEqual(first["style_context"]["reference_ids"], ["mower-reference"])
+            guide["text"] = "[shape.readable] Changed instruction"
+            second = R.pack("m", "final")
+            self.assertNotEqual(first["pack"], second["pack"])
+
     def test_findings_for_another_pack_are_refused(self):
         manifest = R.pack("m", "final")
         with self.assertRaises(SystemExit):

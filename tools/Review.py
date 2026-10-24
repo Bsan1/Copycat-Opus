@@ -176,26 +176,36 @@ def pack(model, stage):
     for name in closeups:
         shutil.copyfile(os.path.join(folder, name[5:]), os.path.join(out, name))
         files.append(name)
-    # The art style: its board (both palettes and the sources) goes with every pack (skill art-style), with the heroes
-    # (the approved look, to compare pairwise) and the near misses (the style and the ways to miss it, each with its rule)
-    board = os.path.join(ROOT, "Builds", "Style", "style_board.png")
-    if os.path.exists(board):
-        shutil.copyfile(board, os.path.join(out, "style_board.png"))
-        files.append("style_board.png")
     style = read_json(p["style"])
-    heroes = [h for h in (style or {}).get("heroes", []) if h != model]
-    tiles = [(hero_view(h), h) for h in heroes]
-    if strip([t for t in tiles if t[0]], os.path.join(out, "heroes.png")):
-        files.append("heroes.png")
-    rows = []
-    for near in (style or {}).get("lookdev", {}).get("near_miss_models", []):
-        row = [(os.path.join(p["lookdev"], f"near_{near}_style.png"), f"{near}: the style")]
-        row += [(os.path.join(p["lookdev"], f"near_{near}_{n['variant']}.png"), f"{n['variant']} ({n['rule']})")
-                for n in style.get("near_misses", [])]
-        rows.append([r for r in row if os.path.exists(r[0])])
-    if strip_rows([r for r in rows if r], os.path.join(out, "near_misses.png")):
-        files.append("near_misses.png")
-    pack_id = sha(spec.get("structure", "") + "".join(sha_file(os.path.join(out, f)) for f in files) + stage)[:12]
+    guide = None
+    if style and style.get("schema", 2) >= 3:
+        import StyleGuide
+        guide = StyleGuide.brief(ROOT, model)
+        board = guide.get("board")
+        if board and os.path.exists(board):
+            shutil.copyfile(board, os.path.join(out, "style_references.png"))
+            files.append("style_references.png")
+    else:
+        # The art style: its board (both palettes and the sources) goes with every pack (skill art-style), with the heroes
+        # (the approved look, to compare pairwise) and the near misses (the style and the ways to miss it, each with its rule)
+        board = os.path.join(ROOT, "Builds", "Style", "style_board.png")
+        if os.path.exists(board):
+            shutil.copyfile(board, os.path.join(out, "style_board.png"))
+            files.append("style_board.png")
+        heroes = [h for h in (style or {}).get("heroes", []) if h != model]
+        tiles = [(hero_view(h), h) for h in heroes]
+        if strip([t for t in tiles if t[0]], os.path.join(out, "heroes.png")):
+            files.append("heroes.png")
+        rows = []
+        for near in (style or {}).get("lookdev", {}).get("near_miss_models", []):
+            row = [(os.path.join(p["lookdev"], f"near_{near}_style.png"), f"{near}: the style")]
+            row += [(os.path.join(p["lookdev"], f"near_{near}_{n['variant']}.png"), f"{n['variant']} ({n['rule']})")
+                    for n in style.get("near_misses", [])]
+            rows.append([r for r in row if os.path.exists(r[0])])
+        if strip_rows([r for r in rows if r], os.path.join(out, "near_misses.png")):
+            files.append("near_misses.png")
+    pack_id = sha(spec.get("structure", "") + "".join(sha_file(os.path.join(out, f)) for f in files) + stage
+                  + (guide["text"] + guide.get("rules_hash", "") if guide else ""))[:12]
     plan = spec.get("plan")
     lines = [f"# Review brief: {model} ({stage})", "",
              f"**Pack id:** `{pack_id}`: copy it into your JSON as \"pack\".", ""]
@@ -242,7 +252,14 @@ def pack(model, stage):
             lines += [f"- `{item['overlay']}` against {item['frame']}: alignment {item['alignment']} "
                       f"(reprojection {item['rms_px']} px, {item['rms_pct']} % of the object's height)"]
             lines += [f"  - {m}" for m in item.get("messages", [])]
-    if style and "albedo" in style.get("measured", {}):
+    if guide:
+        lines += ["", "**Scoped 3D style brief** (technical checks and asset approval are separate):", "",
+                  guide["text"].strip()]
+        if "style_references.png" in files:
+            lines += ["", "Selected reference crops: `style_references.png`; use the numbered evidence in the brief."]
+        lines += ["", "A style finding needs its rule ID, evidence, and a `location` in a pack image. "
+                  "Draft guidance is advisory; do not present it as user-approved."]
+    elif style and "albedo" in style.get("measured", {}):
         lines += ["", f"**Art style** (judge the renders against `style_board.png` and these rules): {style.get('summary', '')}"]
         lines += [f"- `{r['id']}` ({r['kind']}): {r['text']}" for r in style.get("rules", [])]
         if "heroes.png" in files:
@@ -286,6 +303,9 @@ def pack(model, stage):
                 "structure": spec.get("structure"), "geometry": spec.get("geometry"), "spec": sha_file(spec_path(model, stage)),
                 "files": {f: sha_file(os.path.join(out, f)) for f in files}, "basis": carry_basis(spec),
                 "features": [f["id"] for f in features]}
+    if guide:
+        manifest["style_context"] = {"rules_hash": guide.get("rules_hash"),
+                                     "reference_ids": guide.get("reference_ids", []), "stats": guide.get("stats", {})}
     write_json(os.path.join(out, "manifest.json"), manifest)
     print(f"pack {pack_id}: {os.path.relpath(out, ROOT)} ({', '.join(files)}); reviewer instructions: "
           f".claude/skills/model-plausibility/review.md")

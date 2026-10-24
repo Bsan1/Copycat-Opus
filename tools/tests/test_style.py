@@ -4,11 +4,13 @@ palette, and the base-colour check (a colour outside the style fails unless the 
 Run: py -3 -m unittest discover -s tools/tests
 """
 import json
+import io
 import os
 import shutil
 import sys
 import tempfile
 import unittest
+from unittest import mock
 
 import numpy as np
 
@@ -146,6 +148,56 @@ class RuleTests(CheckTests):
         self.assertEqual(sorted(w.split(":")[1].strip() for w in warnings), ["Body", "Lip"])
         self.model(bevels={"Body": None, "Cord": None}, unchamfered={"Cord": "a 3 mm cord"})   # on purpose, with a reason
         self.assertEqual([w.split(":")[1].strip() for w in S.rules_check("m", RULES)[1]], ["Body"])
+
+    def test_schema3_draft_thresholds_warn_and_retired_rules_do_not_apply(self):
+        style = json.loads(json.dumps(RULES))
+        style["schema"] = 3
+        for rule in style["rules"]:
+            rule.update(origin="technical", status="draft", enforce="error")
+        self.model(triangles=1500)
+        problems, warnings, _ = S.rules_check("m", style)
+        self.assertEqual(problems, [])
+        self.assertIn("detail.budgets", warnings[0])
+        style["rules"][1]["status"] = "retired"
+        self.assertEqual(S.rules_check("m", style)[:2], ([], []))
+        style["rules"][1]["status"] = "active"
+        self.assertIn("detail.budgets", S.rules_check("m", style)[0][0])
+
+    def test_low_triangle_count_does_not_invent_a_style_defect(self):
+        self.model(triangles=10)
+        self.assertEqual(S.rules_check("m", RULES)[:2], ([], []))
+
+    def test_schema3_does_not_apply_legacy_albedo_or_revision_gates(self):
+        self.spec([{"name": "Plastic_00FF00_glossy", "note": "green"}])
+        style = dict(STYLE, schema=3, style_version="new-document-revision")
+        self.assertEqual(S.check("m", style), ([], None, None))
+
+    def test_schema3_commands_delegate_without_legacy_extraction(self):
+        import StyleGuide
+        with mock.patch.object(S, "load_style", return_value={"schema": 3}), \
+                mock.patch.object(StyleGuide, "measure", return_value={"images": []}) as measure, \
+                mock.patch.object(StyleGuide, "brief", return_value={"path": "brief.md"}) as brief, \
+                mock.patch.object(StyleGuide, "validate_project", return_value=[]) as validate:
+            S.extract(["source.png"])
+            S.brief("m", "machine")
+            S.validate({"schema": 3})
+            measure.assert_called_once_with(self.root, ["source.png"])
+            brief.assert_called_once_with(self.root, "m", cls="machine")
+            validate.assert_called_once_with(self.root)
+
+    def test_schema3_report_keeps_asset_approval_separate_from_style(self):
+        import Review
+        self.model()
+        style = dict(RULES, schema=3)
+        output = io.StringIO()
+        with mock.patch.object(S, "load_style", return_value=style), \
+                mock.patch.object(S, "validate", return_value=[]), \
+                mock.patch.object(Review, "state", return_value={"text": "approved", "clean": True}), \
+                mock.patch("sys.stdout", output):
+            self.assertEqual(S.report(["m"], True), 0)
+        row = json.loads(output.getvalue())["m"]
+        self.assertEqual(row["asset_review"]["text"], "approved")
+        self.assertEqual(row["visual_style"], "not assessed by numeric checks")
 
 
 class NearMissTests(CheckTests):
