@@ -1,6 +1,6 @@
 # Reviewer instructions (model-independent)
 
-You are reviewing a procedurally generated 3D model for **functional and structural plausibility**: does it make sense as a real object built and used the way its plan says? You did not build it. Judge only what the pack shows. Do not open the generator, the source code or any other file: the pack is all you need.
+You are reviewing a procedurally generated 3D model for **functional and structural plausibility**: does it make sense as a real object built and used the way its plan says? You did not build it. Judge only what the pack shows. Start from the pack. If an important point remains unresolved, inspect the relevant source/rule detail or request the missing view; do not guess from an undersized image. Keep implementation review separate from judging the visible result.
 
 ## Inputs (in the pack folder)
 
@@ -8,7 +8,7 @@ You are reviewing a procedurally generated 3D model for **functional and structu
 - `brief.md`: purpose, sources, the plan table, declared links, the measured gate numbers, the generator's notes on the source, and the guidance for this object's category.
 - `view_*.png`: the views of the critical and important features at full size, listed in the brief under "Close-ups". Judge those features on them: the sheet is shrunk to fit and small members vanish there.
 
-- `style_references.png`: optional numbered crops selected for this asset; source IDs and limitations are in the brief.
+- `style_references*.png`: numbered overview boards for this asset. `style_reference_01.png`, etc. contain every selected crop at full resolution; use these for detail. Source IDs, limitations and any pending evidence status are in the brief.
 
 ## Look for specific contradictions
 
@@ -24,7 +24,7 @@ Check each of these against the renders:
 - **Construction:** is it built the way such things are really built? Look at the joinery, the knots, the fasteners, the order of the layers.
 - **Use:** is what the hands hold where hands reach, and sized for them?
 - **Source:** do the shapes contradict the generator's notes or the reference crops? Is a guessed part implausible?
-- **Art style:** use only the scoped rules and selected evidence in the brief. State the rule ID and the specific contradiction. Draft rules remain advisory.
+- **Art style:** use only the scoped rules and selected evidence in the brief. State the rule ID and the specific contradiction. Draft rules remain advisory. A latest user decision takes precedence over preserved details marked for reconciliation; pending or superseded evidence is not proof of the new decision. Check the colour roles and material finish instructions against the visible result; numerical colour coverage can be partial.
   - Report a mismatch as a finding whose problem starts with "style:" and give its `location`: the pack image and where in it (`view_front.png: the roof edge`). A style finding without a location is refused.
 - **Pretend functions:** is there a detail that suggests a function the object cannot have (a cable going nowhere, a button on a part nobody can reach), or geometry that contradicts another part?
 

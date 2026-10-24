@@ -1,6 +1,6 @@
 # Görsellerden gelişen 3D stil rehberi — uygulama planı
 
-24 Ekim 2026. Durum: ilk uygulama tamamlandı. Kaynaklı stil verisi, iki belge, kısa brief, sınırlı güncelleme ve teknik entegrasyon mevcut. Görsel stil içeriği kullanıcı onayı verilmiş sayılmayan taslaktır.
+24 Ekim 2026. Durum: ilk uygulama ve içerik kaybını gideren ikinci revizyon doğrulandı. Kaynaklı stil verisi, iki belge, eksiksiz ilgili üretim brief'i, hedefli güncelleme ve teknik entegrasyon mevcut. Görsel stil içeriği kullanıcı onayı verilmiş sayılmayan taslaktır. Aşağıdaki ilk teslimat kaydı tarihseldir; güncel davranış ve doğrulama bu belgenin sonundadır.
 
 ## Hedef ve kapsam
 
@@ -124,3 +124,19 @@ Bu oyunun mevcut referanslarıyla oluşturulmuş kaynaklı stil taslağı, görs
 - Oyun kodu, shader'lar, generator'lar ve modeller değiştirilmedi. Bağımsız pipeline reposu kapsam dışında kaldı. Yeni oyun/Blender build'i çalıştırılmadı.
 
 Kullanım başlangıcı: `py -3 tools/Style.py bible`; model işi için `py -3 tools/Style.py brief <model> --class <class>`. Ayrıntılı komutlar README'nin Art style maddesinde ve oyun içindeki art-style skill'inde bulunur.
+
+## İçerik kaybı düzeltmeleri ve kurtarma doğrulaması
+
+24 Ekim 2026, belge revizyonu 2. Kullanıcının son kararı: kaliteyi azaltan token kısıtlarını kaldır; çok oyunlu doğrulamayı sonraya bırak. Önceki sohbet bu düzeltmelerin kodunu, testlerini, skill kopyalarını, README'yi ve üretilen belgeleri kaydetmişti. Kurtarma sırasında mevcut dosyalar sohbet kaydıyla karşılaştırıldı.
+
+- Üretim brief'i ilgili kuralların talimatlarını, kaçınılacakları, gerekçeleri, yüzey bitişi tablosunu ve renk hedeflerini içerir. Karakter veya görsel sayısı yüzünden içerik kesilmez. İlgili panoların yanında tam çözünürlüklü kırpımlar da verilir; önbellek ve kapsam seçimi korunur.
+- Geri bildirim eski ayrıntıları silmez. Tam önce/sonra geçmişi tutulur; etkilenen eski ayrıntılar uzlaştırılana kadar işaretlenir. Bekleyen veya geçersizleşmiş kanıt güncel doğrulama sayılmaz.
+- Renkler rol bazında, taslak öneriler olarak kontrol edilir. Sayısal taban rengi olmayan kaynak dokular ölçülmemiş kalır. Pah kontrolü artık genel 1–2,5 mm bandını uygulamaz; açık politika kapsamındaki eksik/geçersiz genişlikleri bildirir. Gerçek genişlik parça ölçeği ve görsel incelemeyle seçilir.
+- Kullanılmayan schema-2 çalışma yolları ve trailer stil puanlama kodu kaldırıldı. Eski ölçümler ve tarihsel handoff açıklamaları arşiv niteliğinde korunur.
+- Güncel brief uzunlukları: mower 12.887, house 12.690, tree 10.164 karakter. Bunlar üst sınır değildir. İlk teslimattaki 2.400–2.600 karakter ve tek pano beklentisi artık geçerli değildir.
+- Kurtarma doğrulaması: 69 araç testi geçti; iki stil doğrulayıcısı geçti. Sekiz üretim modeli teknik kontrollerden geçti; kalibrasyon modeli kapsam dışı. `wheel` için 38.080 / 30.000 üçgen bütçesi uyarısı sürüyor. Görsel incelemeler ve kullanıcı onayları tamamlanmış sayılmadı.
+- `Style.py bible` tekrar çalıştırıldı: `changed: false`, belge revizyonu 2. Kaynaklar ile rapor/rehber/örnek brief'ler zaten eşitti. Bu kontrol Unity veya Blender çalıştırmadı.
+- Rapor tarayıcıda doğrulandı: 36 görsel yüklendi, kırık görsel veya JavaScript hatası yok; masaüstü/mobil yatay taşma yok. Makine filtresi 14 ilgili/ortak kuralı gösterdi, ilgisiz kural göstermedi. Kapak ve renk tablosu görsel olarak incelendi; önizleme yenilendi.
+- Çok oyunlu görsel deneme ve bu rehberle yeni modelin uçtan uca görsel doğrulaması henüz yapılmadı. Bunlar ertelenmiş işlerdir; kurtarma kapsamında onaylanmış sonuç gibi sunulmaz.
+
+Sohbetler, kalan işler ve sürüm kontrolü durumu: [24 Ekim devralma kaydı](session-recovery-2026-10-24.md).

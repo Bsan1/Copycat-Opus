@@ -3,6 +3,7 @@
 > Historical handoff for the pre-schema-3 implementation. The game repository now has a reference-backed guideline,
 > scoped briefs and synchronized AI/human documents. See [the implementation plan and delivery record](style-guideline-plan.md)
 > and the README's Art style section for the current workflow. The findings below explain the migration; they are not current instructions.
+> The [24 October recovery record](session-recovery-2026-10-24.md) records the latest verified changes and remaining work.
 
 Handoff written 24 October 2026, for whoever continues this work (for example Codex). It is written to be honest: the
 system does not yet do what the user asked.
