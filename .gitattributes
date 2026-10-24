@@ -1,0 +1,2 @@
+# Store the Windows player snapshot in Git LFS, including Unity data and libraries.
+/Builds/Windows/** filter=lfs diff=lfs merge=lfs -text

@@ -3,7 +3,10 @@
 /[Tt]emp/
 /[Oo]bj/
 /[Bb]uild/
-/[Bb]uilds/
+# Keep generated reports, caches and backups local; publish only the Windows player.
+/[Bb]uilds/*
+!/[Bb]uilds/Windows/
+/[Bb]uilds/Windows/*_BurstDebugInformation_DoNotShip/
 /[Ll]ogs/
 /[Uu]serSettings/
 /[Mm]emoryCaptures/
